@@ -43,6 +43,12 @@ app = create_app(
 
 @app.get("/", response_class=HTMLResponse)
 async def root_page():
+    # Redirect to the OpenEnv Playground if it's enabled, otherwise show status
+    import os
+    if os.environ.get("ENABLE_WEB_INTERFACE", "").lower() in ["true", "1", "yes"]:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/web/")
+    
     return """
     <!DOCTYPE html>
     <html>
