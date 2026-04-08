@@ -13,7 +13,7 @@ from models import EmailAction, ActionType
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
-HF_TOKEN = os.environ.get("HF_TOKEN", os.environ.get("OPENAI_API_KEY", ""))
+API_KEY = os.environ.get("API_KEY", os.environ.get("OPENAI_API_KEY", "dummy_key"))
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
@@ -85,35 +85,37 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str):
     try:
         result = await env.reset(task_name=task_name) 
         
-        # Hardcoded specific solutions for baseline verification
-        hardcoded_steps = {
-            "easy": [
-                "MOVE e2 SPAM",
-                "SUBMIT"
-            ],
-            "medium": [
-                "MOVE e1 SPAM",
-                "REPLY e2 refund processed",
-                "SUBMIT"
-            ],
-            "hard": [
-                "MOVE e1 SPAM",
-                "REPLY e2 refund processed",
-                "FORWARD e3 finance@company.com",
-                "SUBMIT"
-            ]
-        }
-        
-        steps_to_take = hardcoded_steps.get(task_name, ["SUBMIT"])
-        
+        history = [{"role": "system", "content": SYSTEM_PROMPT}]
+                
         for step_idx in range(1, 10):
             if result.done:
                 break
                 
             steps_taken = step_idx
             
-            # To strictly guarantee baseline reproducibility, use hardcoded actions
-            action_str = steps_to_take[min(step_idx - 1, len(steps_to_take) - 1)]
+            obs = result.observation
+            obs_str = f"Feedback: {obs.system_message}\n"
+            if obs.read_email_content:
+                obs_str += f"Email Content: {obs.read_email_content}\n"
+            
+            obs_str += "Inbox:\n"
+            for email in obs.inbox_summary:
+                obs_str += f"- ID: {email.id} | Sender: {email.sender} | Subject: {email.subject} | Folder: {email.folder}\n"
+                
+            history.append({"role": "user", "content": obs_str})
+            
+            try:
+                response = await client.chat.completions.create(
+                    model=MODEL_NAME,
+                    messages=history,
+                    temperature=0.0
+                )
+                action_str = response.choices[0].message.content.strip()
+                history.append({"role": "assistant", "content": action_str})
+            except Exception as e:
+                print(f"API Error at step {step_idx}: {e}", flush=True)
+                action_str = "SUBMIT"
+                
             action = parse_model_response(action_str)
             
             try:
@@ -156,7 +158,7 @@ async def main():
         print(f"Error during wait_for_server: {e}", flush=True)
 
     try:
-        client = AsyncOpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN or "dummy_key")
+        client = AsyncOpenAI(base_url=API_BASE_URL, api_key=API_KEY)
         
         # We test all 3 tasks sequentially
         for task in ["easy", "medium", "hard"]:
