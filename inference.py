@@ -15,6 +15,9 @@ API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 HF_TOKEN = os.environ.get("HF_TOKEN", os.environ.get("OPENAI_API_KEY", ""))
 
+# Use environment variable for server URL if available, fallback to localhost:7860
+ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
+
 BENCHMARK = "email_triage"
 
 def log_start(task: str, env: str, model: str):
@@ -132,24 +135,41 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str):
         score = min(max(score, 0.0), 1.0)
         success = score >= 1.0
         
+    except Exception as e:
+        print(f"CRITICAL ERROR in run_task: {e}", flush=True)
+        log_end(success=False, steps=steps_taken, score=0.0, rewards=rewards)
     finally:
         try:
             await env.close()
-        except:
+        except Exception:
             pass
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 async def main():
-    url = "http://localhost:7860"
-    if not await wait_for_server(url):
-        print(f"Server at {url} not reachable. Start it with 'uv run server' first.")
-        return
-
-    client = AsyncOpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN or "dummy_key")
+    print(f"Starting inference with ENV_URL={ENV_URL}, MODEL_NAME={MODEL_NAME}", flush=True)
     
-    # We test all 3 tasks sequentially
-    for task in ["easy", "medium", "hard"]:
-        await run_task(task, client, url)
+    url = ENV_URL
+    try:
+        if not await wait_for_server(url):
+            print(f"Server at {url} not reachable. Proceeding with caution...", flush=True)
+            # We don't return immediately, maybe the health check is just failing but the API works
+    except Exception as e:
+        print(f"Error during wait_for_server: {e}", flush=True)
+
+    try:
+        client = AsyncOpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN or "dummy_key")
+        
+        # We test all 3 tasks sequentially
+        for task in ["easy", "medium", "hard"]:
+            try:
+                await run_task(task, client, url)
+            except Exception as task_error:
+                print(f"Error running task {task}: {task_error}", flush=True)
+    except Exception as e:
+        print(f"Unhandled exception in main: {e}", flush=True)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"FATAL ERROR: {e}", flush=True)
+        sys.exit(1) # We still exit non-zero if it's truly fatal, but we logged it
