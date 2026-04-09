@@ -173,6 +173,19 @@ async def main():
         model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
         print(f"Starting inference with ENV_URL={url}, MODEL_NAME={model_name}", flush=True)
 
+        try:
+            print("[LLM PROXY TEST] Making initial call...", flush=True)
+            test_response = await client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "user", "content": "Hello"}
+                ],
+                temperature=0.0
+            )
+            print("[LLM PROXY SUCCESS]", test_response.choices[0].message.content, flush=True)
+        except Exception as e:
+            print("[LLM PROXY ERROR]", e, flush=True)
+
         # We test all 3 tasks sequentially
         for task in ["easy", "medium", "hard"]:
             try:
