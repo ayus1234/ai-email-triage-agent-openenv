@@ -115,6 +115,7 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 
             action = parse_model_response(action_str)
             if action.action_type == ActionType.SUBMIT:
+                done = True
                 break
                 
             try:
