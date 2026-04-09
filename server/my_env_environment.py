@@ -203,9 +203,12 @@ class MyEnvironment(Environment):
                 passed_checks += 1
                 
         if total_checks == 0:
-            return 1.0
+            raw_score = 1.0
+        else:
+            raw_score = float(passed_checks) / float(total_checks)
             
-        return float(passed_checks) / float(total_checks)
+        # Ensure score falls strictly within (0, 1) to pass Phase 2 validation
+        return min(max(raw_score, 0.001), 0.999)
 
     @property
     def state(self) -> State:

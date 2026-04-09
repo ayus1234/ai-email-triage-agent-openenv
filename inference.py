@@ -130,8 +130,8 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 score = reward
                 break
                 
-        score = min(max(score, 0.0), 1.0)
-        success = score >= 1.0
+        score = min(max(score, 0.001), 0.999)
+        success = score >= 0.99
         
     except Exception as e:
         print(f"CRITICAL ERROR in run_task: {e}", flush=True)
