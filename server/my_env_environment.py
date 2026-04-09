@@ -96,7 +96,7 @@ class MyEnvironment(Environment):
         self.replies_sent = []
         self.forwards_sent = []
         
-        return self._get_observation("Environment reset. Task loaded: " + self.task_name, done=False, reward=0.0)
+        return self._get_observation("Environment reset. Task loaded: " + self.task_name, done=False, reward=0.01)
 
     def _get_observation(self, system_message: str, done: bool, reward: float, read_content: str = None) -> EmailObservation:
         summary = [
@@ -107,7 +107,9 @@ class MyEnvironment(Environment):
         obs = EmailObservation(
             system_message=system_message,
             inbox_summary=summary,
-            read_email_content=read_content
+            read_email_content=read_content,
+            done=done,
+            reward=reward
         )
         # Note: reward/done are actually handled by the server wrapper in some OpenEnv versions,
         # but here we ensure they are available however the protocol expects.
@@ -161,6 +163,9 @@ class MyEnvironment(Environment):
             score = self.grade_task()
             reward = score
             message = f"Task completed with score {score}"
+
+        # Guarantee the reward is absolutely valid within bounds before it's passed out
+        reward = max(0.001, min(reward, 0.999))
 
         # We set these on the observation object if it supports them, or the server will extract them
         obs = self._get_observation(message, done, reward, read_content)
