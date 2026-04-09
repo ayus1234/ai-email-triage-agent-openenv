@@ -114,7 +114,9 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 action_str = "SUBMIT"
                 
             action = parse_model_response(action_str)
-            
+            if action.action_type == ActionType.SUBMIT:
+                break
+                
             try:
                 result = await env.step(action)
             except Exception as e:
@@ -123,8 +125,6 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 
             reward = result.reward if result.reward is not None else 0.01
             reward = max(0.001, min(reward, 0.999))
-            if action.action_type == ActionType.SUBMIT:
-                score = reward
             done = result.done
             rewards.append(reward)
             
