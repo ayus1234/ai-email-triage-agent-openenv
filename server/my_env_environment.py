@@ -117,7 +117,7 @@ class MyEnvironment(Environment):
 
     def step(self, action: EmailAction) -> EmailObservation:  # type: ignore[override]
         self._state.step_count += 1
-        reward = 0.05  # Small step reward to encourage interaction
+        reward = 0.01  # Minimum step reward to ensure no 0.0 values
         done = False
         message = ""
         read_content = None
@@ -129,7 +129,7 @@ class MyEnvironment(Environment):
                 reward = 0.01
             else:
                 message = "Error: Invalid email ID"
-                reward = -0.01
+                reward = 0.001
 
         elif action.action_type == ActionType.MOVE:
             if action.email_id in self.emails and action.target_folder:
@@ -138,7 +138,7 @@ class MyEnvironment(Environment):
                 reward = 0.05
             else:
                 message = "Error: Invalid email ID or missing folder"
-                reward = -0.01
+                reward = 0.001
 
         elif action.action_type == ActionType.REPLY:
             if action.email_id in self.emails and action.body:
@@ -147,7 +147,7 @@ class MyEnvironment(Environment):
                 reward = 0.05
             else:
                 message = "Error: Invalid email ID or missing body"
-                reward = -0.01
+                reward = 0.001
                 
         elif action.action_type == ActionType.FORWARD:
             if action.email_id in self.emails and action.to_address:
@@ -156,7 +156,7 @@ class MyEnvironment(Environment):
                 reward = 0.05
             else:
                 message = "Error: Invalid email ID or missing address"
-                reward = -0.01
+                reward = 0.001
 
         elif action.action_type == ActionType.SUBMIT:
             done = True
@@ -165,7 +165,7 @@ class MyEnvironment(Environment):
             message = f"Task completed with score {score}"
 
         # Guarantee the reward is absolutely valid within bounds before it's passed out
-        reward = max(0.01, min(reward, 0.99))
+        reward = max(0.001, min(reward, 0.999))
 
         # We set these on the observation object if it supports them, or the server will extract them
         obs = self._get_observation(message, done, reward, read_content)
@@ -213,7 +213,7 @@ class MyEnvironment(Environment):
             raw_score = float(passed_checks) / float(total_checks)
             
         # Ensure score falls strictly within (0, 1) to pass Phase 2 validation
-        return min(max(raw_score, 0.01), 0.99)
+        return min(max(raw_score, 0.001), 0.999)
 
     @property
     def state(self) -> State:

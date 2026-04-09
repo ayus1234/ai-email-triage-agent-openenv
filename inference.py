@@ -117,10 +117,11 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
             try:
                 result = await env.step(action)
             except Exception as e:
-                log_step(step=step_idx, action=action_str, reward=0.0, done=True, error=str(e))
+                log_step(step=step_idx, action=action_str, reward=0.01, done=True, error=str(e))
                 break
                 
-            reward = result.reward or 0.0
+            reward = result.reward if result.reward is not None else 0.01
+            reward = max(0.001, min(reward, 0.999))
             done = result.done
             rewards.append(reward)
             
@@ -130,12 +131,12 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 score = reward
                 break
                 
-        score = min(max(score, 0.01), 0.99)
-        success = score >= 0.9
+        score = max(0.001, min(score, 0.999))
+        success = score >= 0.99
         
     except Exception as e:
         print(f"CRITICAL ERROR in run_task: {e}", flush=True)
-        log_end(success=False, steps=steps_taken, score=0.0, rewards=rewards)
+        log_end(success=False, steps=steps_taken, score=0.01, rewards=rewards)
     finally:
         try:
             await env.close()
