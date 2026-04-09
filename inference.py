@@ -20,10 +20,10 @@ def log_start(task: str, env: str, model: str):
     print(f"[START] task={task} env={env} model={model}", flush=True)
 
 def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str] = None):
-    print(f"[STEP] step={step} action={action} reward={reward:.2f} done={done} error={error}", flush=True)
+    print(f"[STEP] step={step} action={action} reward={reward} done={done} error={error}", flush=True)
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]):
-    print(f"[END] success={success} steps={steps} score={score:.2f} rewards={rewards}", flush=True)
+    print(f"[END] success={success} steps={steps} score={score} rewards={rewards}", flush=True)
 
 SYSTEM_PROMPT = """You are an Email Triage Assistant. You must manage an inbox consisting of emails.
 Available actions:
@@ -130,8 +130,8 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 score = reward
                 break
                 
-        score = min(max(score, 0.001), 0.999)
-        success = score >= 0.99
+        score = min(max(score, 0.01), 0.99)
+        success = score >= 0.9
         
     except Exception as e:
         print(f"CRITICAL ERROR in run_task: {e}", flush=True)

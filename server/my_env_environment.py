@@ -165,7 +165,7 @@ class MyEnvironment(Environment):
             message = f"Task completed with score {score}"
 
         # Guarantee the reward is absolutely valid within bounds before it's passed out
-        reward = max(0.001, min(reward, 0.999))
+        reward = max(0.01, min(reward, 0.99))
 
         # We set these on the observation object if it supports them, or the server will extract them
         obs = self._get_observation(message, done, reward, read_content)
@@ -213,7 +213,7 @@ class MyEnvironment(Environment):
             raw_score = float(passed_checks) / float(total_checks)
             
         # Ensure score falls strictly within (0, 1) to pass Phase 2 validation
-        return min(max(raw_score, 0.001), 0.999)
+        return min(max(raw_score, 0.01), 0.99)
 
     @property
     def state(self) -> State:
