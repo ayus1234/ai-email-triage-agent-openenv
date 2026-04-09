@@ -7,50 +7,194 @@ sdk: docker
 pinned: false
 ---
 
-# Email Triage OpenEnv Environment
+# 📧 Email Triage AI Environment (OpenEnv)
 
-An RL environment that tests an AI agent's ability to act as an automated administrative assistant by managing an email inbox. The environment issues multiple tasks testing reading, moving, forwarding and replying to emails.
+> 🚀 A real-world simulation where an AI agent learns to act as an **autonomous email assistant** — reading, classifying, replying, and routing emails intelligently.
 
-## Domain Motivation (Real-world Utility)
-Triage and management of inboxes is an exceptionally common real-world task. Virtual assistants must deal with partial requests, contextually reply to customers (e.g. processing refunds), forward invoices to appropriate departments, and filter spam.
+---
 
-## Observation Space
-`EmailObservation` contains:
-- `system_message` (str): Feedback from the last action.
-- `inbox_summary` (List[EmailSummary]): A list of all emails containing id, sender, subject, and current folder.
-- `read_email_content` (str): Full text of the recently read email.
-- `done` (bool): True if task complete.
-- `reward` (float): Current score.
+## 🌟 Overview
 
-## Action Space
-`EmailAction` contains:
-- `action_type` (ActionType): READ, MOVE, REPLY, FORWARD or SUBMIT.
-- `email_id` (str): ID of the target email.
-- `target_folder` (str): Target folder for MOVE.
-- `body` (str): Response body for REPLY.
-- `to_address` (str): Address for FORWARD.
+Modern inboxes are chaotic.
 
-## Tasks and Grader
-The environment has 3 tasks with increasing difficulty (easy, medium, hard).
-1. **Easy**: Single spam email filtering.
-2. **Medium**: Filtering plus dynamically replying to a refund request.
-3. **Hard**: Filtering, replying, and forwarding an invoice.
-The score is strictly graded (0.0 to 1.0) and provided upon the agent issuing `SUBMIT` action.
+From spam filtering to handling refunds and forwarding invoices — email management is repetitive, time-consuming, and error-prone.
 
-## Setup Instructions
+This project creates a **reinforcement learning environment** that trains and evaluates AI agents to handle these workflows **end-to-end**, just like a human assistant.
+
+---
+
+## 🎯 Problem Statement
+
+Organizations deal with thousands of emails daily:
+
+- ❌ Manual sorting wastes time  
+- ❌ Incorrect routing causes delays  
+- ❌ Poor responses affect user experience  
+
+👉 **Goal:** Build an AI agent that can autonomously manage an inbox with accuracy and reasoning.
+
+---
+
+## 💡 Solution
+
+We designed a structured OpenEnv environment where an agent must:
+
+- 📖 Understand email intent  
+- 🗂 Classify messages correctly  
+- 💬 Generate contextual replies  
+- 📤 Route emails to appropriate recipients  
+- ✅ Submit final decisions for evaluation  
+
+---
+
+## 🧠 Agent Capabilities
+
+The agent operates like a real assistant:
+
+| Capability | Description |
+|----------|------------|
+| 📖 Read | Understand email content |
+| 🗂 Classify | Identify spam vs important |
+| 💬 Respond | Generate meaningful replies |
+| 📤 Forward | Route emails correctly |
+| ✅ Submit | Finalize task for scoring |
+
+---
+
+## ⚙️ Environment Design
+
+### 📥 Observation Space (`EmailObservation`)
+- `system_message` → Feedback from last action  
+- `inbox_summary` → List of emails (id, sender, subject, folder)  
+- `read_email_content` → Full email content  
+- `done` → Task completion flag  
+- `reward` → Current evaluation score  
+
+---
+
+### 🎯 Action Space (`EmailAction`)
+- `READ` → Open an email  
+- `MOVE` → Move email to folder  
+- `REPLY` → Respond to sender  
+- `FORWARD` → Send to another address  
+- `SUBMIT` → Final evaluation trigger  
+
+---
+
+## 🧩 Task Design (Progressive Difficulty)
+
+### 🟢 Easy — Spam Filtering
+- Identify and move spam email  
+
+---
+
+### 🟡 Medium — Customer Support
+- Filter emails  
+- Reply to refund request  
+
+---
+
+### 🔴 Hard — Multi-step Workflow
+- Filter spam  
+- Respond to customer  
+- Forward invoice to finance  
+
+---
+
+## 🎯 Reward System
+
+- Scores strictly within **(0, 1)**  
+- Final score assigned only on **`SUBMIT`**  
+- Based on:
+  - ✔ Correct classification  
+  - ✔ Accurate responses  
+  - ✔ Proper routing  
+
+---
+
+## 🔄 Example Workflow
+
+1. **READ** email  
+2. → Understand intent  
+3. → **MOVE** (spam / important)  
+4. → **REPLY** (if needed)  
+5. → **FORWARD** (if required)  
+6. → **SUBMIT** for final grading  
+
+---
+
+## 🧪 Playground Interaction
+
+You can test the agent via the OpenEnv interface:
+
+### Example Steps:
+1. Click **Reset**
+2. Perform actions:
+   - READ → inspect email  
+   - MOVE → classify  
+   - REPLY / FORWARD → act  
+3. Click **SUBMIT**
+
+---
+
+## 🛠️ Setup & Run
+
 ```bash
-# Build the environment
+# Build environment
 docker build -t email_triage-env:latest server/
-# Ensure openenv interface is ready
+
+# Validate OpenEnv setup
 openenv validate
-# Run inference reproduction
+
+# Run agent
 python inference.py
 ```
+
+### 🏗️ Architecture Overview
+User Input / Task  
+&nbsp;&nbsp;&nbsp;&nbsp;↓  
+OpenEnv Environment  
+&nbsp;&nbsp;&nbsp;&nbsp;↓  
+LLM Agent (Decision Making)  
+&nbsp;&nbsp;&nbsp;&nbsp;↓  
+Actions (READ / MOVE / REPLY / FORWARD)  
+&nbsp;&nbsp;&nbsp;&nbsp;↓  
+SUBMIT → Grader → Reward Score  
+
+---
+
+## 🔥 Key Highlights
+- 🧠 Real-world inspired environment  
+- ⚙️ Multi-step reasoning tasks  
+- 🎯 Robust and consistent reward system  
+- 🤖 Designed for LLM-based agents  
+- 🔍 Clear evaluation pipeline  
+- 🚀 Scalable for future automation use cases  
+
+---
+
+## 🌍 Real-World Applications
+- 📧 Automated email assistants  
+- 🛎 Customer support automation  
+- 🏢 Enterprise workflow management  
+- 💼 Finance & invoice routing systems  
+
+---
+
 ## 👥 Team OpenAgents
 
-Built as part of the OpenEnv Hackathon.
+Built for the Meta PyTorch Hackathon x Scaler School of Technology 🚀
 
-### Contributors:
+**Contributors:**
 - **Ayush Nathani** – Lead, core implementation  
 - **Amrit Sugandh** – Team member  
-- **Rajababu Kumar** – Team member
+- **Rajababu Kumar** – Team member  
+
+---
+
+## 🏁 Final Note
+
+This project demonstrates how AI agents can move beyond simple Q&A and execute real-world workflows autonomously.
+
+👉 From understanding intent → to taking action → to completing tasks —
+this is a step toward truly agentic AI systems.
