@@ -118,6 +118,29 @@ The agent:
 2. Generates a professional reply
 3. Completes the task with a reward score
 
+---
+
+### 📖 Step 1: Understanding the Email
+The agent reads and understands the customer’s request.
+
+<img width="704" height="767" alt="Screenshot 2026-04-10 212055" src="https://github.com/user-attachments/assets/48c1056d-f92a-4c8e-9abf-a6c900f0e75c" />
+
+---
+
+### 💬 Step 2: Generating Response
+The agent generates a context-aware reply to the customer.
+
+<img width="704" height="767" alt="Screenshot 2026-04-10 212240" src="https://github.com/user-attachments/assets/29df665a-716b-4b75-84af-f431d8be0e4d" />
+
+---
+
+### ✅ Step 3: Task Completion & Evaluation
+The agent completes the workflow and receives a reward score.
+
+<img width="705" height="767" alt="Screenshot 2026-04-10 212359" src="https://github.com/user-attachments/assets/bb39b94f-7247-4f81-b362-e9755e3785e8" />
+
+---
+
 ### 🧪 Playground Interaction
 You can test the agent via the OpenEnv interface:
 **Steps:**
