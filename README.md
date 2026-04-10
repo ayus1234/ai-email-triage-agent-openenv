@@ -1,6 +1,8 @@
 # 📧 Email Triage OpenEnv
 > Automating real-world email workflows using AI agents — from spam filtering to customer support.
 
+🏆 Built for the Meta PyTorch Hackathon — focused on real-world AI agent systems
+
 🚀 A real-world simulation where an AI agent acts as an autonomous email assistant — reading, classifying, replying, and routing emails intelligently.
 
 🌐 **Live Demo:** [https://huggingface.co/spaces/ayus1234/email-triage](https://huggingface.co/spaces/ayus1234/email-triage)
@@ -19,7 +21,7 @@ This project introduces a reinforcement learning environment (**OpenEnv**) that 
 - ⚡ **Execute actions**
 - ✅ **Complete workflows** autonomously
 
-👉 *Just like a real human assistant.*
+👉 *Simulating a real-world autonomous assistant.*
 
 ---
 
