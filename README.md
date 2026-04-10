@@ -1,4 +1,5 @@
 # 📧 Email Triage OpenEnv
+> Automating real-world email workflows using AI agents — from spam filtering to customer support.
 
 🚀 A real-world simulation where an AI agent acts as an autonomous email assistant — reading, classifying, replying, and routing emails intelligently.
 
@@ -22,6 +23,19 @@ This project introduces a reinforcement learning environment (**OpenEnv**) that 
 
 ---
 
+## 🚀 Why This Matters
+
+Most AI systems today are limited to answering questions.
+
+This project goes beyond that by enabling:
+- 🧠 Decision making  
+- ⚡ Action execution  
+- 🔄 Multi-step workflows  
+
+👉 Moving from **passive AI → agentic AI systems**
+
+---
+
 ## 🎯 Problem Statement
 
 Organizations deal with thousands of emails daily:
@@ -33,7 +47,7 @@ Organizations deal with thousands of emails daily:
 
 ---
 
-## 💡 Solution
+## 💡 Solution – How It Works
 
 We designed a structured OpenEnv environment where an agent must:
 1. 📖 **Understand** email intent
@@ -94,6 +108,9 @@ We designed a structured OpenEnv environment where an agent must:
 ## 📸 Demo
 
 ### 💬 Intelligent Email Handling (Refund Request)
+
+📌 *Live agent execution showing reasoning, action, and final reward*
+
 The agent:
 1. Reads a customer refund email
 2. Generates a professional reply
@@ -105,6 +122,23 @@ You can test the agent via the OpenEnv interface:
 1. Click **Reset**
 2. Perform actions: `READ` → `MOVE` → `REPLY / FORWARD`
 3. Click **SUBMIT**
+
+---
+
+## ⚡ Quick Example
+
+**Email:**  
+"Hi, I would like a refund for order #456."
+
+**Agent Actions:**
+- READ → Understand request  
+- REPLY → Generate response  
+- SUBMIT → Complete task  
+
+**Result:**
+- ✅ Context-aware reply  
+- 📊 Reward score  
+- ✔ Task completed
 
 ---
 
@@ -150,6 +184,15 @@ python inference.py
 - 🛎 Customer support automation
 - 🏢 Enterprise workflow management
 - 💼 Finance & invoice routing
+
+---
+
+## 🚀 Future Scope
+
+- 🔗 Integration with Gmail / Outlook APIs  
+- 🤖 Advanced LLM-based reasoning  
+- 📊 Dashboard for analytics  
+- 🧠 Multi-agent collaboration systems
 
 ---
 
