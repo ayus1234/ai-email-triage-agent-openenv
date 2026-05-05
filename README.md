@@ -37,27 +37,27 @@ This isn't a simple simulation — it's a **production-capable multi-agent syste
 ```mermaid
 graph TD
     subgraph "Data Sources"
-        G[Gmail API] --> F[Email Fetcher]
-        S[Simulated Data] --> F
+        G["Gmail API"] --> F["Email Fetcher"]
+        S["Simulated Data"] --> F
     end
     
     subgraph "Multi-Agent Pipeline"
-        F --> A1[🔍 Agent 1: Classifier]
-        A1 -->|classification + reasoning| A2[💬 Agent 2: Responder]
-        A2 -->|response + reasoning| A3[📤 Agent 3: Router]
+        F --> A1["🔍 Agent 1: Classifier"]
+        A1 -->|"classification + reasoning"| A2["💬 Agent 2: Responder"]
+        A2 -->|"response + reasoning"| A3["📤 Agent 3: Router"]
     end
     
     subgraph "Execution"
-        A3 --> E1[MOVE to folder]
-        A3 --> E2[REPLY to sender]
-        A3 --> E3[FORWARD to dept]
-        E1 & E2 & E3 --> GR[✅ Grader → Reward]
+        A3 --> E1["MOVE to folder"]
+        A3 --> E2["REPLY to sender"]
+        A3 --> E3["FORWARD to dept"]
+        E1 & E2 & E3 --> GR["✅ Grader → Reward"]
     end
     
     subgraph "Dashboard"
-        GR --> D1[📊 Analytics]
-        A1 & A2 & A3 --> D2[🧠 Reasoning Traces]
-        D1 & D2 --> UI[Premium Web UI]
+        GR --> D1["📊 Analytics"]
+        A1 & A2 & A3 --> D2["🧠 Reasoning Traces"]
+        D1 & D2 --> UI["Premium Web UI"]
     end
 ```
 
