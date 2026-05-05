@@ -184,8 +184,8 @@ export GROQ_API_KEY="gsk_your_key_here"
 # Run multi-agent inference
 python inference.py
 
-# Access dashboard
-open http://localhost:7860/dashboard
+# Access the premium dashboard
+open http://localhost:7860
 ```
 
 ---
