@@ -74,14 +74,14 @@ class MultiAgentPipeline:
     creating a visible chain-of-thought across the entire pipeline.
     """
 
-    def __init__(self, llm_client, model_name: str):
+    def __init__(self, llm_client, model_name: str, fallback_client=None, fallback_model_name=None):
         from agents.classifier import ClassifierAgent
         from agents.responder import ResponderAgent
         from agents.router import RouterAgent
 
-        self.classifier = ClassifierAgent(llm_client, model_name)
-        self.responder = ResponderAgent(llm_client, model_name)
-        self.router = RouterAgent(llm_client, model_name)
+        self.classifier = ClassifierAgent(llm_client, model_name, fallback_client, fallback_model_name)
+        self.responder = ResponderAgent(llm_client, model_name, fallback_client, fallback_model_name)
+        self.router = RouterAgent(llm_client, model_name, fallback_client, fallback_model_name)
         self.model_name = model_name
         
         # Store all pipeline results for analytics

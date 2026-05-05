@@ -50,7 +50,7 @@ async def wait_for_server(url: str, timeout: int = 30):
     return False
 
 
-async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: str):
+async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: str, fallback_client: Optional[AsyncOpenAI] = None, fallback_model_name: Optional[str] = None):
     log_start(task=task_name, env=BENCHMARK, model=model_name)
     
     env = MyEnv(url)
@@ -61,7 +61,7 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
     done = False
     
     # Initialize the multi-agent pipeline
-    pipeline = MultiAgentPipeline(client, model_name)
+    pipeline = MultiAgentPipeline(client, model_name, fallback_client, fallback_model_name)
     
     try:
         result = await env.reset(task_name=task_name)
@@ -253,6 +253,15 @@ async def main():
             api_key=os.environ["API_KEY"]
         )
         
+        fallback_client = None
+        fallback_model_name = None
+        if "GROQ_API_KEY" in os.environ:
+            fallback_client = AsyncOpenAI(
+                base_url="https://api.groq.com/openai/v1",
+                api_key=os.environ["GROQ_API_KEY"]
+            )
+            fallback_model_name = "llama-3.3-70b-versatile"
+        
         model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
         print(f"\n{'='*70}", flush=True)
         print(f"📧 Email Triage AI — Multi-Agent Inference Engine", flush=True)
@@ -277,7 +286,7 @@ async def main():
         # We test all 3 tasks sequentially
         for task in ["easy", "medium", "hard"]:
             try:
-                await run_task(task, client, url, model_name)
+                await run_task(task, client, url, model_name, fallback_client, fallback_model_name)
             except Exception as task_error:
                 print(f"Error running task {task}: {task_error}", flush=True)
         

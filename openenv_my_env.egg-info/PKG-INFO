@@ -3,7 +3,15 @@ Name: openenv-my_env
 Version: 0.1.0
 Summary: My Env environment for OpenEnv
 Requires-Python: >=3.10
+License-File: LICENSE
 Requires-Dist: openenv-core[core]>=0.2.2
+Requires-Dist: openai>=1.0.0
+Requires-Dist: httpx>=0.24.0
+Provides-Extra: gmail
+Requires-Dist: google-api-python-client>=2.100.0; extra == "gmail"
+Requires-Dist: google-auth-httplib2>=0.1.0; extra == "gmail"
+Requires-Dist: google-auth-oauthlib>=1.0.0; extra == "gmail"
 Provides-Extra: dev
 Requires-Dist: pytest>=8.0.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Dynamic: license-file

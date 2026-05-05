@@ -20,9 +20,11 @@ class ResponderAgent:
     contextual, tone-appropriate replies with reasoning trace.
     """
 
-    def __init__(self, llm_client, model_name: str):
+    def __init__(self, llm_client, model_name: str, fallback_client=None, fallback_model_name=None):
         self.client = llm_client
         self.model_name = model_name
+        self.fallback_client = fallback_client
+        self.fallback_model_name = fallback_model_name
         self.agent_name = "Responder"
 
     async def generate_response(self, email_id: str, sender: str, subject: str,
@@ -75,7 +77,23 @@ Classification: {classification_summary}"""
             return result
             
         except Exception as e:
-            print(f"[ResponderAgent] Error generating response for {email_id}: {e}", flush=True)
+            if self.fallback_client:
+                print(f"[{self.agent_name}] Primary LLM failed ({e}). Retrying with fallback Groq API...", flush=True)
+                try:
+                    response = await self.fallback_client.chat.completions.create(
+                        model=self.fallback_model_name,
+                        messages=messages,
+                        temperature=0.3,
+                    )
+                    raw_response = response.choices[0].message.content.strip()
+                    result = self._parse_response(raw_response, email_id, classification)
+                    result["_raw_response"] = raw_response
+                    result["_agent"] = f"{self.agent_name} (Groq Fallback)"
+                    return result
+                except Exception as e2:
+                    print(f"[{self.agent_name}] Fallback LLM also failed: {e2}", flush=True)
+
+            print(f"[{self.agent_name}] Using rule-based fallback.", flush=True)
             return self._fallback_response(email_id, sender, subject, body, classification)
 
     def _parse_response(self, raw: str, email_id: str, classification: dict) -> dict:
