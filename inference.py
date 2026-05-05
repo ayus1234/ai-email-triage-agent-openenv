@@ -242,6 +242,12 @@ async def main():
             pass
 
         # Fallbacks for local testing but populating directly into os.environ
+        # Use Groq as the primary API if the key is provided
+        if "GROQ_API_KEY" in os.environ:
+            os.environ["API_BASE_URL"] = "https://api.groq.com/openai/v1"
+            os.environ["API_KEY"] = os.environ["GROQ_API_KEY"]
+            os.environ["MODEL_NAME"] = "llama-3.3-70b-versatile"
+            
         if "API_BASE_URL" not in os.environ:
             os.environ["API_BASE_URL"] = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
         if "API_KEY" not in os.environ:
@@ -255,12 +261,6 @@ async def main():
         
         fallback_client = None
         fallback_model_name = None
-        if "GROQ_API_KEY" in os.environ:
-            fallback_client = AsyncOpenAI(
-                base_url="https://api.groq.com/openai/v1",
-                api_key=os.environ["GROQ_API_KEY"]
-            )
-            fallback_model_name = "llama-3.3-70b-versatile"
         
         model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
         print(f"\n{'='*70}", flush=True)
