@@ -192,30 +192,37 @@ open http://localhost:7860/dashboard
 
 ## 📁 Project Structure
 
-```
+```text
 my_env/
-├── agents/                    # Multi-agent system
+│
+├── 📂 agents/                    # Multi-Agent System Core
 │   ├── classifier.py          # Agent 1: Email classification
 │   ├── responder.py           # Agent 2: Reply generation
 │   ├── router.py              # Agent 3: Email routing
-│   └── pipeline.py            # Orchestrator
-├── prompts/                   # Prompt engineering
+│   └── pipeline.py            # Sequential orchestrator
+│
+├── 📂 prompts/                   # Prompt Engineering
 │   ├── classifier_prompt.py   # Few-shot classification prompts
 │   ├── responder_prompt.py    # Tone-adaptive response prompts
 │   └── router_prompt.py       # Department routing prompts
-├── server/                    # FastAPI server
+│
+├── 📂 server/                    # FastAPI & Web Dashboard
 │   ├── app.py                 # Server entry point
 │   ├── dashboard.py           # Dashboard API routes
 │   ├── dashboard.html         # Premium analytics UI
 │   ├── dashboard.css          # External CSS stylesheet
 │   └── my_env_environment.py  # OpenEnv environment
-├── gmail_client.py            # Gmail API integration
-├── reasoning_engine.py        # Chain-of-thought collector
-├── analytics_store.py         # In-memory metrics
-├── inference.py               # Multi-agent inference engine
-├── models.py                  # Data models
-├── client.py                  # OpenEnv client
-└── Dockerfile                 # Container deployment
+│
+├── ⚙️ Core Engines
+│   ├── inference.py           # Multi-agent inference runner
+│   ├── reasoning_engine.py    # Chain-of-thought collector
+│   ├── analytics_store.py     # In-memory metrics tracking
+│   └── gmail_client.py        # Real-world Gmail API integration
+│
+└── 🛠️ Utilities
+    ├── models.py              # Pydantic data models
+    ├── client.py              # OpenEnv client
+    └── Dockerfile             # Container deployment config
 ```
 
 ---
