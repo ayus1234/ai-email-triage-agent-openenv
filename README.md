@@ -1,3 +1,15 @@
+---
+title: Email Triage AI
+emoji: 📧
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_file: app.py
+pinned: true
+license: mit
+short_description: Multi-Agent AI system for automated email triage
+---
+
 # 📧 Email Triage AI — Multi-Agent System
 
 🚀 A production-grade AI system where **multiple specialized agents** collaborate to autonomously manage email inboxes — classifying, reasoning, replying, and routing emails with transparent chain-of-thought.
