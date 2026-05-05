@@ -53,11 +53,16 @@ app.include_router(dashboard_router)
 _server_dir = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=_server_dir), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-async def root_page():
-    from fastapi.responses import RedirectResponse
-    # Redirect root traffic directly to the premium dashboard
-    return RedirectResponse(url="/dashboard")
+@app.middleware("http")
+async def force_redirect_root_to_dashboard(request, call_next):
+    """
+    Middleware to ensure the root URL ALWAYS redirects to the premium dashboard,
+    bypassing any default routes set by the openenv create_app logic.
+    """
+    if request.url.path == "/":
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/dashboard", status_code=307)
+    return await call_next(request)
 
 
 def main(host: str = "0.0.0.0", port: int = 7860):
