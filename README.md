@@ -178,6 +178,9 @@ docker build -t email_triage-env:latest server/
 # Validate OpenEnv setup
 openenv validate
 
+# Set Groq API Key for lightning-fast inference
+export GROQ_API_KEY="gsk_your_key_here"
+
 # Run multi-agent inference
 python inference.py
 
