@@ -204,6 +204,7 @@ my_env/
 │   ├── app.py                 # Server entry point
 │   ├── dashboard.py           # Dashboard API routes
 │   ├── dashboard.html         # Premium analytics UI
+│   ├── dashboard.css          # External CSS stylesheet
 │   └── my_env_environment.py  # OpenEnv environment
 ├── gmail_client.py            # Gmail API integration
 ├── reasoning_engine.py        # Chain-of-thought collector
