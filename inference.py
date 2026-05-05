@@ -1,3 +1,10 @@
+"""
+Email Triage Inference — Multi-Agent Pipeline with Reasoning Traces.
+
+Replaces the single-agent approach with a Classifier → Responder → Router pipeline.
+Each agent produces visible reasoning traces stored in the analytics dashboard.
+"""
+
 import os
 import sys
 import json
@@ -10,6 +17,9 @@ import httpx
 
 from client import MyEnv
 from models import EmailAction, ActionType
+from reasoning_engine import reasoning_engine
+from analytics_store import analytics_store, EmailMetric
+from agents.pipeline import MultiAgentPipeline
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
@@ -25,35 +35,6 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 def log_end(success: bool, steps: int, score: float, rewards: List[float]):
     print(f"[END] success={success} steps={steps} score={score} rewards={rewards}", flush=True)
 
-SYSTEM_PROMPT = """You are an Email Triage Assistant. You must manage an inbox consisting of emails.
-Available actions:
-1. READ <email_id>
-2. MOVE <email_id> <folder>
-3. REPLY <email_id> <body>
-4. FORWARD <email_id> <to_address>
-5. SUBMIT
-
-Reply with EXACTLY one action per turn formatted exactly as above. DO NOT output any other text or reasoning.
-"""
-
-def parse_model_response(text: str) -> EmailAction:
-    text = text.strip()
-    parts = text.split(" ")
-    command = parts[0].upper()
-    try:
-        if command == "READ":
-            return EmailAction(action_type=ActionType.READ, email_id=parts[1])
-        elif command == "MOVE":
-            return EmailAction(action_type=ActionType.MOVE, email_id=parts[1], target_folder=parts[2])
-        elif command == "REPLY":
-            return EmailAction(action_type=ActionType.REPLY, email_id=parts[1], body=" ".join(parts[2:]))
-        elif command == "FORWARD":
-            return EmailAction(action_type=ActionType.FORWARD, email_id=parts[1], to_address=parts[2])
-        elif command == "SUBMIT":
-            return EmailAction(action_type=ActionType.SUBMIT)
-    except Exception:
-        pass
-    return EmailAction(action_type=ActionType.SUBMIT)
 
 async def wait_for_server(url: str, timeout: int = 30):
     start_time = time.time()
@@ -68,74 +49,140 @@ async def wait_for_server(url: str, timeout: int = 30):
             await asyncio.sleep(1.0)
     return False
 
+
 async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: str):
     log_start(task=task_name, env=BENCHMARK, model=model_name)
     
     env = MyEnv(url)
-    history = []
     rewards = []
     steps_taken = 0
     score = 0.01
     success = False
     done = False
     
+    # Initialize the multi-agent pipeline
+    pipeline = MultiAgentPipeline(client, model_name)
+    
     try:
-        result = await env.reset(task_name=task_name) 
+        result = await env.reset(task_name=task_name)
         
-        history = [{"role": "system", "content": SYSTEM_PROMPT}]
-                
-        for step_idx in range(1, 10):
-            if result.done:
-                break
-                
-            steps_taken = step_idx
+        # Start reasoning trace for this episode
+        episode_id = f"{task_name}_{int(time.time())}"
+        reasoning_engine.start_episode(episode_id, task_name)
+        
+        print(f"\n{'='*70}", flush=True)
+        print(f"🚀 TASK: {task_name.upper()} — Multi-Agent Pipeline Active", flush=True)
+        print(f"{'='*70}", flush=True)
+        
+        # Phase 1: Read all emails to get their content
+        emails_data = []
+        for email_summary in result.observation.inbox_summary:
+            steps_taken += 1
+            read_action = EmailAction(action_type=ActionType.READ, email_id=email_summary.id)
+            result = await env.step(read_action)
             
-            obs = result.observation
-            obs_str = f"Feedback: {obs.system_message}\n"
-            if obs.read_email_content:
-                obs_str += f"Email Content: {obs.read_email_content}\n"
-            
-            obs_str += "Inbox:\n"
-            for email in obs.inbox_summary:
-                obs_str += f"- ID: {email.id} | Sender: {email.sender} | Subject: {email.subject} | Folder: {email.folder}\n"
-                
-            history.append({"role": "user", "content": obs_str})
-            
-            try:
-                response = await client.chat.completions.create(
-                    model=model_name,
-                    messages=history,
-                    temperature=0.01
-                )
-                action_str = response.choices[0].message.content.strip()
-                history.append({"role": "assistant", "content": action_str})
-            except Exception as e:
-                print(f"API Error at step {step_idx}: {e}", flush=True)
-                action_str = "SUBMIT"
-                
-            action = parse_model_response(action_str)
-            if action.action_type == ActionType.SUBMIT:
-                done = True
-                break
-                
-            try:
-                result = await env.step(action)
-            except Exception as e:
-                log_step(step=step_idx, action=action_str, reward=0.01, done=True, error=str(e))
-                break
-                
             reward = result.reward if result.reward is not None else 0.01
             reward = max(0.001, min(reward, 0.999))
-            done = result.done
             rewards.append(reward)
             
-            log_step(step=step_idx, action=action_str, reward=reward, done=done, error=None)
+            log_step(step=steps_taken, action=f"READ {email_summary.id}", reward=reward, done=result.done)
             
-            if done:
+            emails_data.append({
+                "id": email_summary.id,
+                "sender": email_summary.sender,
+                "subject": email_summary.subject,
+                "body": result.observation.read_email_content or "",
+            })
+            
+            if result.done:
+                done = True
                 break
         
         if not done:
-            # Always force a SUBMIT if not already done to guarantee an authentic graded score
+            # Phase 2: Process all emails through multi-agent pipeline
+            pipeline_results = await pipeline.process_inbox(emails_data)
+            
+            # Phase 3: Execute actions based on pipeline decisions
+            for pr in pipeline_results:
+                # Record reasoning traces
+                for trace in pr.traces:
+                    reasoning_engine.record_step(
+                        agent_name=trace.agent_name,
+                        email_id=trace.email_id,
+                        reasoning=trace.reasoning,
+                        action=str(trace.output),
+                        confidence=trace.confidence,
+                        duration_ms=trace.duration_ms,
+                    )
+                
+                # Execute MOVE action
+                if pr.action_move_to:
+                    steps_taken += 1
+                    move_action = EmailAction(
+                        action_type=ActionType.MOVE,
+                        email_id=pr.email_id,
+                        target_folder=pr.action_move_to
+                    )
+                    result = await env.step(move_action)
+                    reward = max(0.001, min(result.reward or 0.01, 0.999))
+                    rewards.append(reward)
+                    log_step(step=steps_taken, action=f"MOVE {pr.email_id} {pr.action_move_to}", reward=reward, done=result.done)
+                    if result.done:
+                        done = True
+                        break
+                
+                # Execute REPLY action
+                if pr.action_reply_body and not done:
+                    steps_taken += 1
+                    reply_action = EmailAction(
+                        action_type=ActionType.REPLY,
+                        email_id=pr.email_id,
+                        body=pr.action_reply_body
+                    )
+                    result = await env.step(reply_action)
+                    reward = max(0.001, min(result.reward or 0.01, 0.999))
+                    rewards.append(reward)
+                    log_step(step=steps_taken, action=f"REPLY {pr.email_id}", reward=reward, done=result.done)
+                    if result.done:
+                        done = True
+                        break
+                
+                # Execute FORWARD action
+                if pr.action_forward_to and not done:
+                    steps_taken += 1
+                    forward_action = EmailAction(
+                        action_type=ActionType.FORWARD,
+                        email_id=pr.email_id,
+                        to_address=pr.action_forward_to
+                    )
+                    result = await env.step(forward_action)
+                    reward = max(0.001, min(result.reward or 0.01, 0.999))
+                    rewards.append(reward)
+                    log_step(step=steps_taken, action=f"FORWARD {pr.email_id} {pr.action_forward_to}", reward=reward, done=result.done)
+                    if result.done:
+                        done = True
+                        break
+                
+                # Record analytics
+                classification = pr.classification.get("classification", {})
+                analytics_store.record_email(EmailMetric(
+                    email_id=pr.email_id,
+                    task_name=task_name,
+                    category=classification.get("category", "unknown"),
+                    was_spam=classification.get("category") == "spam",
+                    reply_sent=pr.action_reply_body is not None,
+                    forwarded=pr.action_forward_to is not None,
+                    forward_to=pr.action_forward_to,
+                    classification_confidence=classification.get("confidence", 0.5),
+                    response_confidence=pr.response.get("response", {}).get("confidence", 0.5),
+                    routing_confidence=pr.routing.get("routing", {}).get("confidence", 0.5),
+                    processing_time_ms=pr.total_duration_ms,
+                    reward=reward,
+                    timestamp=time.time(),
+                ))
+        
+        # Phase 4: Submit for grading
+        if not done:
             try:
                 result = await env.step(EmailAction(action_type=ActionType.SUBMIT))
                 reward = result.reward if result.reward is not None else 0.01
@@ -144,23 +191,27 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                 rewards.append(reward)
                 done = True
             except Exception as e:
-                print("[FORCED SUBMIT ERROR]", e, flush=True)
-                # RETRY once more (important)
+                print(f"[SUBMIT ERROR] {e}", flush=True)
                 try:
                     result = await env.step(EmailAction(action_type=ActionType.SUBMIT))
-                    reward = result.reward if result.reward is not None else 0.01
-                    reward = max(0.001, min(reward, 0.999))
+                    reward = max(0.001, min(result.reward or 0.01, 0.999))
                     score = reward
                     rewards.append(score)
                     done = True
                 except Exception as e2:
-                    print("[FORCED SUBMIT RETRY FAILED]", e2, flush=True)
+                    print(f"[SUBMIT RETRY FAILED] {e2}", flush=True)
 
         score = max(0.001, min(score, 0.999))
         success = score >= 0.99
         steps_taken = max(1, steps_taken)
         if len(rewards) == 0:
             rewards.append(score)
+        
+        # End reasoning trace and record task score
+        reasoning_engine.end_episode(score, len(emails_data))
+        analytics_store.record_task_score(task_name, score)
+        
+        print(f"\n🏆 Task '{task_name}' completed — Score: {score:.3f}", flush=True)
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
         
     except Exception as e:
@@ -180,7 +231,6 @@ async def main():
     try:
         if not await wait_for_server(url):
             print(f"Server at {url} not reachable. Proceeding with caution...", flush=True)
-            # We don't return immediately, maybe the health check is just failing but the API works
     except Exception as e:
         print(f"Error during wait_for_server: {e}", flush=True)
 
@@ -204,7 +254,12 @@ async def main():
         )
         
         model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
-        print(f"Starting inference with ENV_URL={url}, MODEL_NAME={model_name}", flush=True)
+        print(f"\n{'='*70}", flush=True)
+        print(f"📧 Email Triage AI — Multi-Agent Inference Engine", flush=True)
+        print(f"   Model: {model_name}", flush=True)
+        print(f"   Server: {url}", flush=True)
+        print(f"   Pipeline: Classifier → Responder → Router", flush=True)
+        print(f"{'='*70}\n", flush=True)
 
         try:
             print("[LLM PROXY TEST] Making initial call...", flush=True)
@@ -225,6 +280,18 @@ async def main():
                 await run_task(task, client, url, model_name)
             except Exception as task_error:
                 print(f"Error running task {task}: {task_error}", flush=True)
+        
+        # Print final analytics summary
+        summary = analytics_store.get_summary()
+        print(f"\n{'='*70}", flush=True)
+        print(f"📊 ANALYTICS SUMMARY", flush=True)
+        print(f"   Emails Processed: {summary['overview']['total_emails']}", flush=True)
+        print(f"   Spam Blocked: {summary['overview']['spam_detected']}", flush=True)
+        print(f"   Replies Sent: {summary['overview']['replies_sent']}", flush=True)
+        print(f"   Avg Reward: {summary['performance']['avg_reward']:.3f}", flush=True)
+        print(f"   Task Scores: {summary['performance']['task_scores']}", flush=True)
+        print(f"{'='*70}\n", flush=True)
+        
     except Exception as e:
         print(f"Unhandled exception in main: {e}", flush=True)
 

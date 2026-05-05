@@ -19,6 +19,11 @@ try:
 except (ImportError, ValueError):
     from models import ActionType, EmailAction, EmailObservation, EmailSummary
 
+try:
+    from gmail_client import GmailFetcher
+except ImportError:
+    GmailFetcher = None
+
 TASKS_DATA = {
     "easy": {
         "emails": [
@@ -69,6 +74,7 @@ class MyEnvironment(Environment):
     """
     Email Triage Environment.
     The agent manages an inbox, processes emails, and executes actions.
+    Supports real Gmail integration when credentials are available.
     """
     SUPPORTS_CONCURRENT_SESSIONS: bool = True
 
@@ -79,6 +85,20 @@ class MyEnvironment(Environment):
         self.replies_sent = []
         self.forwards_sent = []
         self._reset_count = 0
+        self._use_gmail = False
+        
+        # Try to initialize Gmail fetcher
+        self._gmail_fetcher = None
+        if GmailFetcher is not None:
+            try:
+                self._gmail_fetcher = GmailFetcher()
+                self._use_gmail = self._gmail_fetcher.is_authenticated
+                if self._use_gmail:
+                    print("[Environment] 📧 Gmail API connected — using real emails", flush=True)
+                else:
+                    print("[Environment] 📡 Gmail not authenticated — simulated mode", flush=True)
+            except Exception as e:
+                print(f"[Environment] Gmail init error: {e} — simulated mode", flush=True)
 
     def reset(self, **kwargs) -> EmailObservation:
         self._state = State(episode_id=str(uuid4()), step_count=0)

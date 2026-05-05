@@ -1,72 +1,129 @@
-# 📧 Email Triage OpenEnv
-> Automating real-world email workflows using AI agents — from spam filtering to customer support.
+# 📧 Email Triage AI — Multi-Agent System
 
-🏆 Built for the Meta PyTorch Hackathon — focused on real-world AI agent systems
-
-🚀 An AI-powered email triage agent that reads, classifies, replies, and routes emails autonomously using OpenEnv and LLMs.
+🚀 A production-grade AI system where **multiple specialized agents** collaborate to autonomously manage email inboxes — classifying, reasoning, replying, and routing emails with transparent chain-of-thought.
 
 🌐 **Live Demo:** [https://huggingface.co/spaces/ayus1234/email-triage](https://huggingface.co/spaces/ayus1234/email-triage)
 
 ---
 
-## 🌟 Overview
+## 🌟 What Makes This Different
 
-Modern inboxes are chaotic.
+This isn't a simple simulation — it's a **production-capable multi-agent system** with:
 
-From spam filtering to handling refunds and forwarding invoices — email management is repetitive, time-consuming, and error-prone.
-
-This project introduces a reinforcement learning environment (**OpenEnv**) that enables AI agents to:
-- 📖 **Understand** emails
-- 🧠 **Make decisions**
-- ⚡ **Execute actions**
-- ✅ **Complete workflows** autonomously
-
-👉 *Simulating a real-world autonomous assistant.*
-
----
-
-## 🚀 Why This Matters
-
-Most AI systems today are limited to answering questions.
-
-This project goes beyond that by enabling:
-- 🧠 Decision making  
-- ⚡ Action execution  
-- 🔄 Multi-step workflows  
-
-👉 Moving from **passive AI → agentic AI systems**
-
----
-
-## 🎯 Problem Statement
-
-Organizations deal with thousands of emails daily:
-- ❌ **Manual sorting** wastes time
-- ❌ **Incorrect routing** causes delays
-- ❌ **Poor responses** affect user experience
-
-👉 **Goal:** Build an AI agent that can autonomously manage an inbox with accuracy and reasoning.
-
----
-
-## 💡 Solution – How It Works
-
-We designed a structured OpenEnv environment where an agent must:
-1. 📖 **Understand** email intent
-2. 🗂 **Classify** messages correctly
-3. 💬 **Generate** contextual replies
-4. 📤 **Route** emails appropriately
-5. ✅ **Submit** decisions for evaluation
-
-### 🧠 Agent Capabilities
-
-| Capability | Description |
+| Feature | Description |
 | :--- | :--- |
-| 📖 **Read** | Understand email content |
-| 🗂 **Classify** | Identify spam vs important |
-| 💬 **Respond** | Generate meaningful replies |
-| 📤 **Forward** | Route emails correctly |
-| ✅ **Submit** | Finalize task for scoring |
+| 🔗 **Gmail API Integration** | Real inbox connection with OAuth2 (simulated fallback) |
+| 🤖 **Multi-Agent Pipeline** | 3 specialized agents: Classifier → Responder → Router |
+| 🧠 **Visible AI Reasoning** | Full chain-of-thought traces showing WHY the AI decided |
+| 📊 **Analytics Dashboard** | Real-time metrics, charts, and performance tracking |
+| 🎯 **Smart Prompt Engineering** | Few-shot examples, structured JSON output, confidence scoring |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    subgraph "Data Sources"
+        G[Gmail API] --> F[Email Fetcher]
+        S[Simulated Data] --> F
+    end
+    
+    subgraph "Multi-Agent Pipeline"
+        F --> A1[🔍 Agent 1: Classifier]
+        A1 -->|classification + reasoning| A2[💬 Agent 2: Responder]
+        A2 -->|response + reasoning| A3[📤 Agent 3: Router]
+    end
+    
+    subgraph "Execution"
+        A3 --> E1[MOVE to folder]
+        A3 --> E2[REPLY to sender]
+        A3 --> E3[FORWARD to dept]
+        E1 & E2 & E3 --> GR[✅ Grader → Reward]
+    end
+    
+    subgraph "Dashboard"
+        GR --> D1[📊 Analytics]
+        A1 & A2 & A3 --> D2[🧠 Reasoning Traces]
+        D1 & D2 --> UI[Premium Web UI]
+    end
+```
+
+---
+
+## 🤖 Multi-Agent System
+
+### Agent 1: Classifier 🔍
+- Analyzes email content, sender trust, and spam indicators
+- Outputs: category, confidence score, suggested folder
+- Few-shot prompted with structured JSON reasoning
+
+### Agent 2: Responder 💬
+- Receives classification context from Agent 1
+- Generates tone-adaptive replies (empathetic, formal, friendly)
+- Template fallback when LLM is unavailable
+
+### Agent 3: Router 📤
+- Receives outputs from both previous agents
+- Applies department routing rules (finance, support, management)
+- Decides folder placement and forwarding
+
+### Pipeline Orchestrator
+- Sequential processing with shared context
+- Full reasoning trace capture per agent
+- Automatic fallback to rule-based decisions
+
+---
+
+## 🧠 Visible AI Reasoning
+
+Every decision shows transparent chain-of-thought:
+
+```json
+{
+  "agent": "Classifier",
+  "reasoning": {
+    "content_analysis": "Customer requesting refund for damaged product",
+    "sender_trust": "trusted",
+    "spam_indicators": [],
+    "intent": "requesting financial resolution",
+    "urgency": "high",
+    "sentiment": "frustrated"
+  },
+  "classification": {
+    "category": "support",
+    "confidence": 0.95,
+    "suggested_folder": "INBOX"
+  }
+}
+```
+
+---
+
+## 📊 Analytics Dashboard
+
+Access at `/dashboard` — features:
+- **Real-time metrics**: Emails processed, spam blocked, replies sent
+- **Classification distribution**: Doughnut chart of email categories
+- **Task performance**: Bar chart of scores across difficulty levels
+- **Agent pipeline visualization**: Animated flow diagram
+- **Reasoning feed**: Live chain-of-thought from all agents
+
+---
+
+## 🔗 Gmail API Integration
+
+The system supports **real Gmail inbox connection**:
+
+```bash
+# Install Gmail dependencies
+pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+# Set credentials path
+export GMAIL_CREDENTIALS_PATH=credentials.json
+```
+
+When credentials are not available, the system automatically falls back to enhanced simulated emails.
 
 ---
 
@@ -87,97 +144,16 @@ We designed a structured OpenEnv environment where an agent must:
 - `SUBMIT` → Trigger final evaluation
 
 ### 🧩 Task Design (Progressive Difficulty)
-- 🟢 **Easy** — Spam Filtering: Identify and move spam email
-- 🟡 **Medium** — Customer Support: Classify emails + reply to refund requests
-- 🔴 **Hard** — Multi-step Workflow: Filter spam, respond to customer, and forward invoice to finance
+- 🟢 **Easy** — Spam Filtering
+- 🟡 **Medium** — Customer Support + Classification
+- 🔴 **Hard** — Multi-step: Filter + Respond + Forward
 
 ---
 
 ## 🎯 Reward System
 - Scores range between **0 and 1**
 - Final score assigned only on `SUBMIT`
-
-**Evaluation is based on:**
-- ✔ Correct classification
-- ✔ Accurate responses
-- ✔ Proper routing
-
-### 🔄 Example Workflow
-`READ` → `Understand` → `MOVE` → `REPLY / FORWARD` → `SUBMIT` → `Reward`
-
----
-
-## 📸 Demo
-
-### 💬 Intelligent Email Handling (Refund Request)
-
-📌 *Live agent execution showing reasoning, action, and final reward*
-
-The agent:
-1. Reads a customer refund email
-2. Generates a professional reply
-3. Completes the task with a reward score
-
----
-
-🚀 **Step-by-step execution of the AI agent:**
-
-### 📖 Step 1: Understanding the Email
-The agent reads and understands the customer’s request.
-
-<img width="704" height="767" alt="Screenshot 2026-04-10 212055" src="https://github.com/user-attachments/assets/48c1056d-f92a-4c8e-9abf-a6c900f0e75c" />
-
----
-
-### 💬 Step 2: Generating Response
-The agent generates a context-aware reply to the customer.
-
-<img width="704" height="767" alt="Screenshot 2026-04-10 212240" src="https://github.com/user-attachments/assets/29df665a-716b-4b75-84af-f431d8be0e4d" />
-
----
-
-### ✅ Step 3: Task Completion & Evaluation
-The agent completes the workflow and receives a reward score.
-
-<img width="705" height="767" alt="Screenshot 2026-04-10 212359" src="https://github.com/user-attachments/assets/bb39b94f-7247-4f81-b362-e9755e3785e8" />
-
----
-
-### 🧪 Playground Interaction
-You can test the agent via the OpenEnv interface:
-**Steps:**
-1. Click **Reset**
-2. Perform actions: `READ` → `MOVE` → `REPLY / FORWARD`
-3. Click **SUBMIT**
-
----
-
-## ⚡ Quick Example
-
-**Email:**  
-"Hi, I would like a refund for order #456."
-
-**Agent Actions:**
-- READ → Understand request  
-- REPLY → Generate response  
-- SUBMIT → Complete task  
-
-**Result:**
-- ✅ Context-aware reply  
-- 📊 Reward score  
-- ✔ Task completed
-
----
-
-## 🏗️ Architecture Overview
-
-```mermaid
-graph TD
-    A[User Input / Task] --> B[OpenEnv Environment]
-    B --> C[LLM Agent - Decision Making]
-    C --> D[Actions - READ / MOVE / REPLY / FORWARD]
-    D --> E[SUBMIT --> Grader --> Reward Score]
-```
+- Evaluation: correct classification + accurate responses + proper routing
 
 ---
 
@@ -190,36 +166,52 @@ docker build -t email_triage-env:latest server/
 # Validate OpenEnv setup
 openenv validate
 
-# Run agent
+# Run multi-agent inference
 python inference.py
+
+# Access dashboard
+open http://localhost:7860/dashboard
+```
+
+---
+
+## 📁 Project Structure
+
+```
+my_env/
+├── agents/                    # Multi-agent system
+│   ├── classifier.py          # Agent 1: Email classification
+│   ├── responder.py           # Agent 2: Reply generation
+│   ├── router.py              # Agent 3: Email routing
+│   └── pipeline.py            # Orchestrator
+├── prompts/                   # Prompt engineering
+│   ├── classifier_prompt.py   # Few-shot classification prompts
+│   ├── responder_prompt.py    # Tone-adaptive response prompts
+│   └── router_prompt.py       # Department routing prompts
+├── server/                    # FastAPI server
+│   ├── app.py                 # Server entry point
+│   ├── dashboard.py           # Dashboard API routes
+│   ├── dashboard.html         # Premium analytics UI
+│   └── my_env_environment.py  # OpenEnv environment
+├── gmail_client.py            # Gmail API integration
+├── reasoning_engine.py        # Chain-of-thought collector
+├── analytics_store.py         # In-memory metrics
+├── inference.py               # Multi-agent inference engine
+├── models.py                  # Data models
+├── client.py                  # OpenEnv client
+└── Dockerfile                 # Container deployment
 ```
 
 ---
 
 ## 🔥 Key Highlights
-- 🧠 **Real-world inspired** environment
-- ⚙️ **Multi-step reasoning** tasks
-- 🎯 **Robust reward system**
-- 🤖 Designed for **LLM-based agents**
-- 🔍 **Clear evaluation** pipeline
-- 🚀 **Scalable architecture**
-
----
-
-## 🌍 Real-World Applications
-- 📧 Automated email assistants
-- 🛎 Customer support automation
-- 🏢 Enterprise workflow management
-- 💼 Finance & invoice routing
-
----
-
-## 🚀 Future Scope
-
-- 🔗 Integration with Gmail / Outlook APIs  
-- 🤖 Advanced LLM-based reasoning  
-- 📊 Dashboard for analytics  
-- 🧠 Multi-agent collaboration systems
+- 🤖 **Multi-Agent Architecture** — 3 specialized collaborative agents
+- 🧠 **Transparent Reasoning** — Full chain-of-thought for every decision
+- 🔗 **Real-World Integration** — Gmail API with graceful fallback
+- 📊 **Production Dashboard** — Real-time analytics and visualization
+- 🎯 **Smart Prompts** — Few-shot examples with structured JSON output
+- ⚙️ **Robust Rewards** — Multi-criteria grading system
+- 🚀 **Scalable Design** — Docker + HuggingFace Spaces ready
 
 ---
 
@@ -236,6 +228,6 @@ Built for **Meta PyTorch Hackathon x Scaler School of Technology** 🚀
 
 ## 🏁 Final Note
 
-This project demonstrates how AI agents can move beyond simple Q&A and execute real-world workflows autonomously.
+This project demonstrates how **multi-agent AI systems** can move beyond simple Q&A to execute real-world workflows autonomously — with full transparency, real integrations, and production-grade engineering.
 
-👉 **From understanding intent → taking action → completing tasks, this is a step toward truly agentic AI systems.**
+👉 **From understanding intent → collaborative reasoning → taking action → completing tasks — this is a step toward truly agentic AI systems.**

@@ -15,21 +15,26 @@ except ImportError as e:
         "openenv is required for the web interface. Install dependencies with '\n    uv sync\n'"
     ) from e
 
+import os
+
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 try:
     from ..models import EmailAction, EmailObservation
     from .my_env_environment import MyEnvironment
+    from .dashboard import router as dashboard_router
 except (ImportError, ValueError):
     try:
         from models import EmailAction, EmailObservation
         from server.my_env_environment import MyEnvironment
+        from server.dashboard import router as dashboard_router
     except ImportError:
         import sys
-        import os
         sys.path.append(os.getcwd())
         from models import EmailAction, EmailObservation
         from server.my_env_environment import MyEnvironment
+        from server.dashboard import router as dashboard_router
 
 
 # Create the app with web interface
@@ -40,6 +45,13 @@ app = create_app(
     env_name="my_env",
     max_concurrent_envs=1,
 )
+
+# Mount the dashboard and analytics API routes
+app.include_router(dashboard_router)
+
+# Serve static files (CSS, JS, images) from the server/ directory
+_server_dir = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=_server_dir), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def root_page():
