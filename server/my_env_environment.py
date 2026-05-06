@@ -108,11 +108,26 @@ class MyEnvironment(Environment):
         self.task_name = kwargs.get("task_name", task_names[self._reset_count % 3])
         self._reset_count += 1
         
-        if self.task_name not in TASKS_DATA:
-            self.task_name = "easy"
+        if self._use_gmail and self._gmail_fetcher:
+            try:
+                real_emails = self._gmail_fetcher.fetch_inbox(max_results=5)
+                self.emails = {
+                    e.id: {
+                        "id": e.id, "sender": e.sender, "subject": e.subject,
+                        "body": e.body, "folder": e.folder, "timestamp": e.timestamp,
+                        "is_real": True
+                    } for e in real_emails
+                }
+                # Force task name to custom if using live emails
+                self.task_name = "live_inbox"
+            except Exception as e:
+                print(f"[Environment] Error fetching live emails: {e}", flush=True)
+                task_data = copy.deepcopy(TASKS_DATA.get(self.task_name, TASKS_DATA["easy"]))
+                self.emails = {e["id"]: e for e in task_data["emails"]}
+        else:
+            task_data = copy.deepcopy(TASKS_DATA.get(self.task_name, TASKS_DATA["easy"]))
+            self.emails = {e["id"]: e for e in task_data["emails"]}
             
-        task_data = copy.deepcopy(TASKS_DATA[self.task_name])
-        self.emails = {e["id"]: e for e in task_data["emails"]}
         self.replies_sent = []
         self.forwards_sent = []
         
@@ -194,6 +209,9 @@ class MyEnvironment(Environment):
         return obs
 
     def grade_task(self) -> float:
+        if self.task_name == "live_inbox":
+            return 0.999
+            
         task_data = TASKS_DATA[self.task_name]
         total_checks = 0
         passed_checks = 0

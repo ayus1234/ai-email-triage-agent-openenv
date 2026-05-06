@@ -7,13 +7,23 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import asyncio
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from analytics_store import analytics_store
 from reasoning_engine import reasoning_engine
+from inference import main as run_inference_pipeline
 
 router = APIRouter()
+
+@router.post("/api/start-agent")
+async def start_agent():
+    """Trigger the inference pipeline in the background."""
+    import os
+    os.environ["QUIET_MODE"] = "1"
+    asyncio.create_task(run_inference_pipeline())
+    return JSONResponse(content={"status": "started", "message": "Agent pipeline started"})
 
 
 @router.get("/api/analytics")

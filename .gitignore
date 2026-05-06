@@ -20,3 +20,8 @@ outputs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets & Tokens
+.env
+credentials.json
+token.json

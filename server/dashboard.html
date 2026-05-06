@@ -27,6 +27,7 @@
         </div>
       </div>
       <div class="header-right">
+        <button class="action-btn" id="startBtn" onclick="startAgent()">▶️ Start Agent</button>
         <div id="gmailBadge" class="gmail-badge simulated">📡 Simulated Mode</div>
         <div class="status-badge"><span class="status-dot"></span> System Online</div>
         <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">↻ Refresh</button>
@@ -208,6 +209,18 @@
         document.getElementById('statReward').textContent = d.performance.avg_reward.toFixed(3);
         document.getElementById('statTime').textContent = d.performance.avg_processing_time_ms.toFixed(0) + 'ms';
 
+        // Sync Start Button State
+        const btn = document.getElementById('startBtn');
+        if (d.overview.is_running) {
+          btn.innerHTML = '⏳ Processing Inbox...';
+          btn.classList.add('pulse');
+          btn.disabled = true;
+        } else {
+          btn.innerHTML = '▶️ Start Agent';
+          btn.classList.remove('pulse');
+          btn.disabled = false;
+        }
+
         const cats = d.distribution.categories;
         categoryChart.data.labels = Object.keys(cats).length ? Object.keys(cats) : ['No Data'];
         categoryChart.data.datasets[0].data = Object.keys(cats).length ? Object.values(cats) : [1];
@@ -287,6 +300,22 @@
         feed.scrollTop = feed.scrollHeight;
       } catch (e) {
         console.log('Reasoning fetch:', e);
+      }
+    }
+
+    async function startAgent() {
+      const btn = document.getElementById('startBtn');
+      btn.innerHTML = '⏳ Connecting...';
+      btn.classList.add('pulse');
+      btn.disabled = true;
+      try {
+        await fetch('/api/start-agent', { method: 'POST' });
+        // Polling will automatically pick up the is_running flag and sync the button
+      } catch (e) {
+        console.error('Start agent error:', e);
+        btn.innerHTML = '▶️ Start Agent';
+        btn.classList.remove('pulse');
+        btn.disabled = false;
       }
     }
 

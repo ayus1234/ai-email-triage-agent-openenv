@@ -38,6 +38,7 @@ class AnalyticsStore:
         self.task_scores: Dict[str, List[float]] = defaultdict(list)
         self.episode_count = 0
         self.total_emails = 0
+        self.is_running = False
         self._start_time = time.time()
 
     def record_email(self, metric: EmailMetric):
@@ -90,6 +91,7 @@ class AnalyticsStore:
             "overview": {
                 "total_emails": total,
                 "total_episodes": self.episode_count,
+                "is_running": self.is_running,
                 "spam_detected": spam_count,
                 "replies_sent": replies,
                 "forwards_sent": forwards,
@@ -121,6 +123,7 @@ class AnalyticsStore:
         return {
             "overview": {
                 "total_emails": 0, "total_episodes": 0,
+                "is_running": self.is_running,
                 "spam_detected": 0, "replies_sent": 0, "forwards_sent": 0,
                 "uptime_seconds": round(time.time() - self._start_time, 1),
             },
