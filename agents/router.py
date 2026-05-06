@@ -80,8 +80,9 @@ Response: {response_summary}"""
             return result
             
         except Exception as e:
+            print(f"[{self.agent_name}] LLM Error: {e}", flush=True)
             if self.fallback_client:
-                print(f"[{self.agent_name}] Primary LLM failed ({e}). Retrying with fallback Groq API...", flush=True)
+                print(f"[{self.agent_name}] Retrying with fallback Groq API...", flush=True)
                 try:
                     llm_response = await self.fallback_client.chat.completions.create(
                         model=self.fallback_model_name,
