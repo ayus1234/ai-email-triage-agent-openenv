@@ -291,7 +291,7 @@ async def main():
         if "GROQ_API_KEY" in os.environ:
             os.environ["API_BASE_URL"] = "https://api.groq.com/openai/v1"
             os.environ["API_KEY"] = os.environ["GROQ_API_KEY"]
-            os.environ["MODEL_NAME"] = "llama-3.3-70b-versatile"
+            os.environ["MODEL_NAME"] = "llama-3.1-8b-instant"
             
         if "API_BASE_URL" not in os.environ:
             os.environ["API_BASE_URL"] = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
