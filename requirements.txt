@@ -7,4 +7,4 @@ google-auth-httplib2
 google-auth-oauthlib
 python-dotenv
 pydantic
-openenv
+openenv-core[core]
