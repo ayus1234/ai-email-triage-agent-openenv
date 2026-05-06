@@ -20,16 +20,16 @@ short_description: Multi-Agent AI system for automated email triage
 
 ## 🌟 What Makes This Different
 
-This isn't a simple simulation — it's a **high-performance multi-agent system** optimized for live demonstration:
+This isn't a simple simulation — it's a **high-performance multi-agent system** optimized for live production environments:
 
 | Feature | Description |
 | :--- | :--- |
-| 🚀 **Groq-Accelerated AI** | Powered by `Llama-3.3-70b-versatile` via Groq for ultra-fast reasoning |
-| 🔗 **Gmail API Integration** | Real-time inbox connection with secure OAuth2 authentication |
+| ⚡ **Llama-3.1-8b-instant** | Powered by Groq's fastest model for sub-second multi-agent reasoning |
+| 🛡️ **Auto-Privacy Masking** | Real-time redaction of email addresses and sensitive data in reasoning traces |
+| 🔗 **Gmail API Integration** | Production-ready OAuth2 connection for real inbox management |
 | 🤖 **Multi-Agent Pipeline** | 3 specialized agents: Classifier → Responder → Router |
 | 🧠 **Visible Reasoning** | Full chain-of-thought traces showing exactly WHY the AI decided |
 | 📊 **Dynamic Dashboard** | Premium web UI with real-time metrics and confidence-based scoring |
-| 🎯 **Unified Performance** | Unified inbox sweep populates Easy, Medium, and Hard benchmarks in one go |
 
 ---
 
@@ -57,7 +57,7 @@ graph TD
     
     subgraph "Command Center Dashboard"
         GR --> D1["📊 Real-time Metrics"]
-        A1 & A2 & A3 --> D2["🧠 Reasoning Chain-of-Thought"]
+        A1 & A2 & A3 --> D2["🧠 Masked Reasoning Chain"]
         D1 & D2 --> UI["Premium Glassmorphism UI"]
     end
 ```
@@ -67,27 +67,28 @@ graph TD
 ## 🤖 Multi-Agent System
 
 ### Agent 1: Classifier 🔍
-- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Model:** Llama-3.1-8b-instant (via Groq)
 - **Role:** Analyzes email content, sender trust, and spam indicators.
 - **Output:** Category, confidence score, suggested folder.
 
 ### Agent 2: Responder 💬
-- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Model:** Llama-3.1-8b-instant (via Groq)
 - **Role:** Generates tone-adaptive replies (empathetic, formal, friendly).
 - **Output:** Adaptive reply text and response reasoning.
 
 ### Agent 3: Router 📤
-- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Model:** Llama-3.1-8b-instant (via Groq)
 - **Role:** Applies department routing rules (finance, support, management).
 - **Output:** Final folder placement and escalation path.
 
 ---
 
-## 🧠 Visible AI Reasoning & Real-Time Scoring
+## 🛡️ Enterprise-Grade Privacy
 
-Every decision made by the AI includes a transparent chain-of-thought visible in the dashboard's **AI Reasoning Chain**. 
-
-**Dynamic Scoring:** The "Task Performance" chart is calculated in real-time based on the AI's actual confidence metrics. Instead of static scores, the dashboard reflects the mathematical average of the AI's confidence across your entire inbox, creating a truly data-driven performance report.
+To ensure safe live demonstrations, the system includes an **Automatic Privacy Masking** engine. Every piece of data processed from the Gmail API is passed through a redaction layer before reaching the dashboard:
+- **Email Addresses:** `user@example.com` → `u***@e***.com`
+- **Sensitive Mentions:** Automatic detection and masking in reasoning logs.
+- **Reasoning Traces:** Full transparency without identity leakage.
 
 ---
 
@@ -112,6 +113,7 @@ pip install -r requirements.txt
 Create a `.env` file:
 ```env
 GROQ_API_KEY=your_key_here
+MODEL_NAME=llama-3.1-8b-instant
 ```
 
 ### 4. Running the Dashboard
@@ -128,7 +130,7 @@ This project is optimized for deployment as a **Hugging Face Docker Space**:
 
 1. Create a new **Docker Space** on Hugging Face.
 2. Add your `GROQ_API_KEY` to the **Secrets** in Space Settings.
-3. Upload your `token.json` file via the **Files and versions** tab to maintain Gmail access.
+3. Upload your `token.json` file via the **Files and versions** tab to enable live Gmail integration.
 4. The dashboard will automatically launch on port 7860!
 
 ---
