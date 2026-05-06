@@ -43,6 +43,24 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]):
     print(f"[END] success={success} steps={steps} score={score} rewards={rewards}", flush=True)
 
 
+def mask_sensitive_info(text: str) -> str:
+    """Mask email addresses and potentially sensitive strings for privacy."""
+    import re
+    if not text: return ""
+    # Mask email addresses like "user@domain.com" -> "u***@d***.com"
+    def mask_email(match):
+        email = match.group(0)
+        if "@" not in email: return email
+        user, domain = email.split("@")
+        masked_user = user[0] + "***" if len(user) > 1 else "*"
+        masked_domain = domain[0] + "***" if len(domain) > 1 else "*"
+        return f"{masked_user}@{masked_domain}"
+    
+    # Simple email regex
+    masked = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', mask_email, text)
+    return masked
+
+
 async def wait_for_server(url: str, timeout: int = 30):
     start_time = time.time()
     async with httpx.AsyncClient() as client:
@@ -96,8 +114,8 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
             
             emails_data.append({
                 "id": email_summary.id,
-                "sender": email_summary.sender,
-                "subject": email_summary.subject,
+                "sender": mask_sensitive_info(email_summary.sender),
+                "subject": email_summary.subject, # Keep subject for context
                 "body": result.observation.read_email_content or "",
             })
             
@@ -116,8 +134,8 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
                     reasoning_engine.record_step(
                         agent_name=trace.agent_name,
                         email_id=trace.email_id,
-                        reasoning=trace.reasoning,
-                        action=str(trace.output),
+                        reasoning=mask_sensitive_info(trace.reasoning),
+                        action=mask_sensitive_info(str(trace.output)),
                         confidence=trace.confidence,
                         duration_ms=trace.duration_ms,
                     )
