@@ -10,7 +10,7 @@ license: mit
 short_description: Multi-Agent AI system for automated email triage
 ---
 
-# 📧 Email Triage AI — Multi-Agent System
+# 📧 Email Triage AI — Command Center
 
 🚀 A production-grade AI system where **multiple specialized agents** collaborate to autonomously manage email inboxes — classifying, reasoning, replying, and routing emails with transparent chain-of-thought.
 
@@ -20,15 +20,16 @@ short_description: Multi-Agent AI system for automated email triage
 
 ## 🌟 What Makes This Different
 
-This isn't a simple simulation — it's a **production-capable multi-agent system** with:
+This isn't a simple simulation — it's a **high-performance multi-agent system** optimized for live demonstration:
 
 | Feature | Description |
 | :--- | :--- |
-| 🔗 **Gmail API Integration** | Real inbox connection with OAuth2 (simulated fallback) |
+| 🚀 **Groq-Accelerated AI** | Powered by `Llama-3.3-70b-versatile` via Groq for ultra-fast reasoning |
+| 🔗 **Gmail API Integration** | Real-time inbox connection with secure OAuth2 authentication |
 | 🤖 **Multi-Agent Pipeline** | 3 specialized agents: Classifier → Responder → Router |
-| 🧠 **Visible AI Reasoning** | Full chain-of-thought traces showing WHY the AI decided |
-| 📊 **Analytics Dashboard** | Real-time metrics, charts, and performance tracking |
-| 🎯 **Smart Prompt Engineering** | Few-shot examples, structured JSON output, confidence scoring |
+| 🧠 **Visible Reasoning** | Full chain-of-thought traces showing exactly WHY the AI decided |
+| 📊 **Dynamic Dashboard** | Premium web UI with real-time metrics and confidence-based scoring |
+| 🎯 **Unified Performance** | Unified inbox sweep populates Easy, Medium, and Hard benchmarks in one go |
 
 ---
 
@@ -41,23 +42,23 @@ graph TD
         S["Simulated Data"] --> F
     end
     
-    subgraph "Multi-Agent Pipeline"
+    subgraph "Multi-Agent Pipeline (Powered by Groq)"
         F --> A1["🔍 Agent 1: Classifier"]
         A1 -->|"classification + reasoning"| A2["💬 Agent 2: Responder"]
         A2 -->|"response + reasoning"| A3["📤 Agent 3: Router"]
     end
     
-    subgraph "Execution"
+    subgraph "Execution & Scoring"
         A3 --> E1["MOVE to folder"]
         A3 --> E2["REPLY to sender"]
         A3 --> E3["FORWARD to dept"]
-        E1 & E2 & E3 --> GR["✅ Grader → Reward"]
+        E1 & E2 & E3 --> GR["✅ Dynamic Confidence Grader"]
     end
     
-    subgraph "Dashboard"
-        GR --> D1["📊 Analytics"]
-        A1 & A2 & A3 --> D2["🧠 Reasoning Traces"]
-        D1 & D2 --> UI["Premium Web UI"]
+    subgraph "Command Center Dashboard"
+        GR --> D1["📊 Real-time Metrics"]
+        A1 & A2 & A3 --> D2["🧠 Reasoning Chain-of-Thought"]
+        D1 & D2 --> UI["Premium Glassmorphism UI"]
     end
 ```
 
@@ -66,38 +67,74 @@ graph TD
 ## 🤖 Multi-Agent System
 
 ### Agent 1: Classifier 🔍
-- Analyzes email content, sender trust, and spam indicators
-- Outputs: category, confidence score, suggested folder
-- Few-shot prompted with structured JSON reasoning
+- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Role:** Analyzes email content, sender trust, and spam indicators.
+- **Output:** Category, confidence score, suggested folder.
 
 ### Agent 2: Responder 💬
-- Receives classification context from Agent 1
-- Generates tone-adaptive replies (empathetic, formal, friendly)
-- Template fallback when LLM is unavailable
+- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Role:** Generates tone-adaptive replies (empathetic, formal, friendly).
+- **Output:** Adaptive reply text and response reasoning.
 
 ### Agent 3: Router 📤
-- Receives outputs from both previous agents
-- Applies department routing rules (finance, support, management)
-- Decides folder placement and forwarding
-
-### Pipeline Orchestrator
-- Sequential processing with shared context
-- Full reasoning trace capture per agent
-- Automatic fallback to rule-based decisions
+- **Model:** Llama-3.3-70b-versatile (via Groq)
+- **Role:** Applies department routing rules (finance, support, management).
+- **Output:** Final folder placement and escalation path.
 
 ---
 
-## 🧠 Visible AI Reasoning
+## 🧠 Visible AI Reasoning & Real-Time Scoring
 
-Every decision shows transparent chain-of-thought:
+Every decision made by the AI includes a transparent chain-of-thought visible in the dashboard's **AI Reasoning Chain**. 
 
-```json
-{
-  "agent": "Classifier",
-  "reasoning": {
-    "content_analysis": "Customer requesting refund for damaged product",
-    "sender_trust": "trusted",
-    "spam_indicators": [],
+**Dynamic Scoring:** The "Task Performance" chart is calculated in real-time based on the AI's actual confidence metrics. Instead of static scores, the dashboard reflects the mathematical average of the AI's confidence across your entire inbox, creating a truly data-driven performance report.
+
+---
+
+## 🚀 Local Setup & Deployment
+
+### 1. Requirements
+- Python 3.10+
+- Groq API Key
+- Gmail API credentials (`credentials.json`)
+
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/ayus1234/ai-email-triage-agent-openenv
+cd ai-email-triage-agent-openenv
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 3. Environment Config
+Create a `.env` file:
+```env
+GROQ_API_KEY=your_key_here
+```
+
+### 4. Running the Dashboard
+```bash
+uv run python -m uvicorn server.app:app --host 0.0.0.0 --port 7860
+```
+Visit `http://localhost:7860/dashboard` in your browser.
+
+---
+
+## ☁️ Deploying to Hugging Face Spaces
+
+This project is optimized for deployment as a **Hugging Face Docker Space**:
+
+1. Create a new **Docker Space** on Hugging Face.
+2. Add your `GROQ_API_KEY` to the **Secrets** in Space Settings.
+3. Upload your `token.json` file via the **Files and versions** tab to maintain Gmail access.
+4. The dashboard will automatically launch on port 7860!
+
+---
+
+📄 **License:** MIT
+🛠 **Framework:** OpenEnv + FastAPI + Groq
     "intent": "requesting financial resolution",
     "urgency": "high",
     "sentiment": "frustrated"
