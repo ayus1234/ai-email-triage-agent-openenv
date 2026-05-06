@@ -43,10 +43,18 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]):
     print(f"[END] success={success} steps={steps} score={score} rewards={rewards}", flush=True)
 
 
-def mask_sensitive_info(text: str) -> str:
+def mask_sensitive_info(text) -> str:
     """Mask email addresses and potentially sensitive strings for privacy."""
     import re
-    if not text: return ""
+    if text is None: return ""
+    
+    # If it's a dict or list, convert to JSON string first to mask it
+    if isinstance(text, (dict, list)):
+        import json
+        text_str = json.dumps(text)
+    else:
+        text_str = str(text)
+        
     # Mask email addresses like "user@domain.com" -> "u***@d***.com"
     def mask_email(match):
         email = match.group(0)
@@ -57,7 +65,7 @@ def mask_sensitive_info(text: str) -> str:
         return f"{masked_user}@{masked_domain}"
     
     # Simple email regex
-    masked = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', mask_email, text)
+    masked = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', mask_email, text_str)
     return masked
 
 
