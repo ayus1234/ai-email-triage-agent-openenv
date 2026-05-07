@@ -45,8 +45,22 @@ class GmailFetcher:
             SCOPES = ['https://www.googleapis.com/auth/gmail.readonly',
                        'https://www.googleapis.com/auth/gmail.modify']
             creds = None
-            if os.path.exists(self.token_path):
+            
+            # Check for token data in environment secrets first (for secure public Spaces)
+            token_data_raw = os.environ.get("GMAIL_TOKEN_DATA")
+            if token_data_raw:
+                try:
+                    import json
+                    token_info = json.loads(token_data_raw)
+                    creds = Credentials.from_authorized_user_info(token_info, SCOPES)
+                    print("[GmailFetcher] ✅ Loaded Gmail token from environment secrets", flush=True)
+                except Exception as e:
+                    print(f"[GmailFetcher] Failed to load token from GMAIL_TOKEN_DATA secret: {e}", flush=True)
+
+            # Fallback to token.json file
+            if not creds and os.path.exists(self.token_path):
                 creds = Credentials.from_authorized_user_file(self.token_path, SCOPES)
+            
             if not creds or not creds.valid:
                 if creds and creds.expired and creds.refresh_token:
                     creds.refresh(Request())
