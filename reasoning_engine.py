@@ -15,7 +15,7 @@ class ReasoningStep:
     step_number: int
     agent_name: str
     email_id: str
-    reasoning: dict
+    reasoning: dict | str
     action_taken: str
     confidence: float
     duration_ms: float
@@ -79,7 +79,7 @@ class ReasoningEngine:
             start_time=time.time(),
         )
 
-    def record_step(self, agent_name: str, email_id: str, reasoning: dict,
+    def record_step(self, agent_name: str, email_id: str, reasoning: dict | str,
                     action: str, confidence: float, duration_ms: float):
         """Record a reasoning step from an agent."""
         if not self._current_episode:

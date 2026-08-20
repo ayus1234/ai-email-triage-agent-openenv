@@ -7,6 +7,12 @@ Each agent produces visible reasoning traces stored in the analytics dashboard.
 
 import os
 import sys
+
+# Ensure current directory is in sys.path for robust module resolution
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 import json
 import asyncio
 import time
@@ -22,11 +28,18 @@ from typing import List, Optional
 from openai import AsyncOpenAI
 import httpx
 
-from client import MyEnv
-from models import EmailAction, ActionType
-from reasoning_engine import reasoning_engine
-from analytics_store import analytics_store, EmailMetric
-from agents.pipeline import MultiAgentPipeline
+try:
+    from my_env.client import MyEnv
+    from my_env.models import EmailAction, ActionType
+    from my_env.reasoning_engine import reasoning_engine
+    from my_env.analytics_store import analytics_store, EmailMetric
+    from my_env.agents.pipeline import MultiAgentPipeline
+except ImportError:
+    from client import MyEnv  # type: ignore
+    from models import EmailAction, ActionType  # type: ignore
+    from reasoning_engine import reasoning_engine  # type: ignore
+    from analytics_store import analytics_store, EmailMetric  # type: ignore
+    from agents.pipeline import MultiAgentPipeline  # type: ignore
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
@@ -291,7 +304,9 @@ async def main():
         if "GROQ_API_KEY" in os.environ:
             os.environ["API_BASE_URL"] = "https://api.groq.com/openai/v1"
             os.environ["API_KEY"] = os.environ["GROQ_API_KEY"]
-            os.environ["MODEL_NAME"] = "llama-3.1-8b-instant"
+            current_model = os.environ.get("MODEL_NAME")
+            if not current_model or current_model == "llama-3.1-8b-instant":
+                os.environ["MODEL_NAME"] = "llama-3.3-70b-versatile"
             
         if "API_BASE_URL" not in os.environ:
             os.environ["API_BASE_URL"] = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")

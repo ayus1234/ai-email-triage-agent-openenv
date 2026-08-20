@@ -24,9 +24,9 @@ This isn't a simple simulation — it's a **high-performance multi-agent system*
 
 | Feature | Description |
 | :--- | :--- |
-| ⚡ **Llama-3.1-8b-instant** | Powered by Groq's fastest model for sub-second multi-agent reasoning |
+| ⚡ **Llama-3.3-70b-versatile** | Powered by Groq's model for high-speed multi-agent reasoning |
 | 🛡️ **Auto-Privacy Masking** | Real-time redaction of email addresses and sensitive data in reasoning traces |
-| 🔗 **Gmail API Integration** | Production-ready OAuth2 connection for real inbox management |
+| 🔗 **Gmail API Integration** | Production-ready OAuth2 connection with helper script (`authenticate_gmail.py`) |
 | 🤖 **Multi-Agent Pipeline** | 3 specialized agents: Classifier → Responder → Router |
 | 🧠 **Visible Reasoning** | Full chain-of-thought traces showing exactly WHY the AI decided |
 | 📊 **Dynamic Dashboard** | Premium web UI with real-time metrics and confidence-based scoring |
@@ -58,7 +58,7 @@ graph TD
     subgraph "Command Center Dashboard"
         GR --> D1["📊 Real-time Metrics"]
         A1 & A2 & A3 --> D2["🧠 Masked Reasoning Chain"]
-        D1 & D2 --> UI["Premium Glassmorphism UI"]
+        D1 & D2 --> UI["Premium Glassmorphic UI"]
     end
 ```
 
@@ -67,17 +67,17 @@ graph TD
 ## 🤖 Multi-Agent System
 
 ### Agent 1: Classifier 🔍
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** Llama-3.3-70b-versatile (via Groq)
 - **Role:** Analyzes email content, sender trust, and spam indicators.
 - **Output:** Category, confidence score, suggested folder.
 
 ### Agent 2: Responder 💬
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** Llama-3.3-70b-versatile (via Groq)
 - **Role:** Generates tone-adaptive replies (empathetic, formal, friendly).
 - **Output:** Adaptive reply text and response reasoning.
 
 ### Agent 3: Router 📤
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** Llama-3.3-70b-versatile (via Groq)
 - **Role:** Applies department routing rules (finance, support, management).
 - **Output:** Final folder placement and escalation path.
 
@@ -109,14 +109,20 @@ cd ai-email-triage-agent-openenv
 pip install -r requirements.txt
 ```
 
-### 3. Environment Config
+### 3. Gmail Re-Authentication (Optional for Real Gmail)
+Run the local OAuth helper script to generate `token.json` and get the `GMAIL_TOKEN_DATA` secret for deployment:
+```bash
+python authenticate_gmail.py
+```
+
+### 4. Environment Config
 Create a `.env` file:
 ```env
 GROQ_API_KEY=your_key_here
-MODEL_NAME=llama-3.1-8b-instant
+MODEL_NAME=llama-3.3-70b-versatile
 ```
 
-### 4. Running the Dashboard
+### 5. Running the Dashboard
 ```bash
 uv run python -m uvicorn server.app:app --host 0.0.0.0 --port 7860
 ```
@@ -130,8 +136,9 @@ This project is optimized for deployment as a **Hugging Face Docker Space**:
 
 1. Create a new **Docker Space** on Hugging Face.
 2. Add your `GROQ_API_KEY` to the **Secrets** in Space Settings.
-3. Upload your `token.json` file via the **Files and versions** tab to enable live Gmail integration.
-4. The dashboard will automatically launch on port 7860!
+3. Run `python authenticate_gmail.py` locally and paste the output string into secret `GMAIL_TOKEN_DATA`.
+4. Set variable `MODEL_NAME` to `llama-3.3-70b-versatile` under Space Variables.
+5. The dashboard will automatically launch on port 7860!
 
 ---
 

@@ -40,4 +40,9 @@ server = "my_env.server.app:main"
 [tool.setuptools]
 include-package-data = true
 packages = ["my_env", "my_env.server", "my_env.agents", "my_env.prompts"]
-package-dir = { "my_env" = ".", "my_env.server" = "server", "my_env.agents" = "agents", "my_env.prompts" = "prompts" }
+
+[tool.setuptools.package-dir]
+my_env = "."
+"my_env.server" = "server"
+"my_env.agents" = "agents"
+"my_env.prompts" = "prompts"
