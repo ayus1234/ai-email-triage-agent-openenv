@@ -7,12 +7,6 @@ Each agent produces visible reasoning traces stored in the analytics dashboard.
 
 import os
 import sys
-
-# Ensure current directory is in sys.path for robust module resolution
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
 import json
 import asyncio
 import time
@@ -28,18 +22,11 @@ from typing import List, Optional
 from openai import AsyncOpenAI
 import httpx
 
-try:
-    from my_env.client import MyEnv
-    from my_env.models import EmailAction, ActionType
-    from my_env.reasoning_engine import reasoning_engine
-    from my_env.analytics_store import analytics_store, EmailMetric
-    from my_env.agents.pipeline import MultiAgentPipeline
-except ImportError:
-    from client import MyEnv  # type: ignore
-    from models import EmailAction, ActionType  # type: ignore
-    from reasoning_engine import reasoning_engine  # type: ignore
-    from analytics_store import analytics_store, EmailMetric  # type: ignore
-    from agents.pipeline import MultiAgentPipeline  # type: ignore
+from client import MyEnv
+from models import EmailAction, ActionType
+from reasoning_engine import reasoning_engine
+from analytics_store import analytics_store, EmailMetric
+from agents.pipeline import MultiAgentPipeline
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
@@ -304,9 +291,7 @@ async def main():
         if "GROQ_API_KEY" in os.environ:
             os.environ["API_BASE_URL"] = "https://api.groq.com/openai/v1"
             os.environ["API_KEY"] = os.environ["GROQ_API_KEY"]
-            current_model = os.environ.get("MODEL_NAME")
-            if not current_model or current_model == "llama-3.1-8b-instant":
-                os.environ["MODEL_NAME"] = "llama-3.3-70b-versatile"
+            os.environ["MODEL_NAME"] = "llama-3.1-8b-instant"
             
         if "API_BASE_URL" not in os.environ:
             os.environ["API_BASE_URL"] = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -330,42 +315,18 @@ async def main():
         print(f"   Pipeline: Classifier → Responder → Router", flush=True)
         print(f"{'='*70}\n", flush=True)
 
-        # Candidate models to auto-discover if primary model returns 404 / unavailable
-        candidate_models = [
-            model_name,
-            "llama-3.3-70b-versatile",
-            "llama-3.3-70b-specdec",
-            "llama-3.1-8b-instant",
-            "llama-3.2-3b-preview",
-            "llama-3.2-1b-preview",
-            "llama-3.2-11b-vision-preview",
-            "deepseek-r1-distill-llama-70b",
-            "qwen-2.5-coder-32b",
-        ]
-        # Deduplicate preserving order
-        seen = set()
-        candidate_models = [m for m in candidate_models if not (m in seen or seen.add(m))]
-
-        working_model = None
-        for candidate in candidate_models:
-            try:
-                print(f"[LLM PROXY TEST] Testing model candidate '{candidate}'...", flush=True)
-                test_response = await client.chat.completions.create(
-                    model=candidate,
-                    messages=[{"role": "user", "content": "Hello"}],
-                    temperature=0.01
-                )
-                print(f"[LLM PROXY SUCCESS] Verified working model '{candidate}'", flush=True)
-                working_model = candidate
-                break
-            except Exception as e:
-                print(f"[LLM PROXY candidate '{candidate}' failed]: {e}", flush=True)
-
-        if working_model:
-            model_name = working_model
-            os.environ["MODEL_NAME"] = working_model
-        else:
-            print(f"[LLM PROXY WARNING] All candidates failed. Proceeding with '{model_name}'", flush=True)
+        try:
+            print("[LLM PROXY TEST] Making initial call...", flush=True)
+            test_response = await client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "user", "content": "Hello"}
+                ],
+                temperature=0.01
+            )
+            print("[LLM PROXY SUCCESS]", test_response.choices[0].message.content, flush=True)
+        except Exception as e:
+            print("[LLM PROXY ERROR]", e, flush=True)
 
         # Process the live inbox exactly ONE time (using the 'easy' label)
         analytics_store.is_running = True
