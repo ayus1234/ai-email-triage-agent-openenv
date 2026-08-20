@@ -18,15 +18,23 @@ def custom_print(*args, **kwargs):
         builtins.print(*args, **kwargs)
 print = custom_print
 
-from typing import List, Optional
-from openai import AsyncOpenAI
-import httpx
+# Ensure current directory is in sys.path for robust module resolution
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
-from client import MyEnv
-from models import EmailAction, ActionType
-from reasoning_engine import reasoning_engine
-from analytics_store import analytics_store, EmailMetric
-from agents.pipeline import MultiAgentPipeline
+try:
+    from client import MyEnv
+    from models import EmailAction, ActionType
+    from reasoning_engine import reasoning_engine
+    from analytics_store import analytics_store, EmailMetric
+    from agents.pipeline import MultiAgentPipeline
+except ImportError:
+    from my_env.client import MyEnv  # type: ignore
+    from my_env.models import EmailAction, ActionType  # type: ignore
+    from my_env.reasoning_engine import reasoning_engine  # type: ignore
+    from my_env.analytics_store import analytics_store, EmailMetric  # type: ignore
+    from my_env.agents.pipeline import MultiAgentPipeline  # type: ignore
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
