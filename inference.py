@@ -26,17 +26,17 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 try:
-    from client import MyEnv
-    from models import EmailAction, ActionType
-    from reasoning_engine import reasoning_engine
-    from analytics_store import analytics_store, EmailMetric
-    from agents.pipeline import MultiAgentPipeline
+    from my_env.client import MyEnv
+    from my_env.models import EmailAction, ActionType
+    from my_env.reasoning_engine import reasoning_engine
+    from my_env.analytics_store import analytics_store, EmailMetric
+    from my_env.agents.pipeline import MultiAgentPipeline
 except ImportError:
-    from my_env.client import MyEnv  # type: ignore
-    from my_env.models import EmailAction, ActionType  # type: ignore
-    from my_env.reasoning_engine import reasoning_engine  # type: ignore
-    from my_env.analytics_store import analytics_store, EmailMetric  # type: ignore
-    from my_env.agents.pipeline import MultiAgentPipeline  # type: ignore
+    from client import MyEnv  # type: ignore
+    from models import EmailAction, ActionType  # type: ignore
+    from reasoning_engine import reasoning_engine  # type: ignore
+    from analytics_store import analytics_store, EmailMetric  # type: ignore
+    from agents.pipeline import MultiAgentPipeline  # type: ignore
 
 # Use environment variable for server URL if available, fallback to localhost:7860
 ENV_URL = os.environ.get("ENV_URL", "http://localhost:7860")
