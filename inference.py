@@ -16,7 +16,9 @@ QUIET_MODE = os.environ.get("QUIET_MODE", "0") == "1"
 def custom_print(*args, **kwargs):
     if not QUIET_MODE:
         builtins.print(*args, **kwargs)
-print = custom_print
+from typing import List, Optional
+from openai import AsyncOpenAI
+import httpx
 
 # Ensure current directory is in sys.path for robust module resolution
 current_dir = os.path.dirname(os.path.abspath(__file__))
