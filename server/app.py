@@ -49,6 +49,16 @@ app = create_app(
 # Mount the dashboard and analytics API routes
 app.include_router(dashboard_router)
 
+from starlette.websockets import WebSocketDisconnect
+
+@app.exception_handler(WebSocketDisconnect)
+async def websocket_disconnect_handler(request, exc: WebSocketDisconnect):
+    """
+    Gracefully handle client WebSocket disconnects when an agent finishes
+    execution without logging unhandled exception stack traces.
+    """
+    return None
+
 # Serve static files (CSS, JS, images) from the server/ directory
 _server_dir = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=_server_dir), name="static")
