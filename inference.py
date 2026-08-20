@@ -330,18 +330,40 @@ async def main():
         print(f"   Pipeline: Classifier → Responder → Router", flush=True)
         print(f"{'='*70}\n", flush=True)
 
-        try:
-            print("[LLM PROXY TEST] Making initial call...", flush=True)
-            test_response = await client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "user", "content": "Hello"}
-                ],
-                temperature=0.01
-            )
-            print("[LLM PROXY SUCCESS]", test_response.choices[0].message.content, flush=True)
-        except Exception as e:
-            print("[LLM PROXY ERROR]", e, flush=True)
+        # Candidate models to auto-discover if primary model returns 404 / unavailable
+        candidate_models = [
+            model_name,
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "llama3-8b-8192",
+            "llama3-70b-8192",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+        ]
+        # Deduplicate preserving order
+        seen = set()
+        candidate_models = [m for m in candidate_models if not (m in seen or seen.add(m))]
+
+        working_model = None
+        for candidate in candidate_models:
+            try:
+                print(f"[LLM PROXY TEST] Testing model candidate '{candidate}'...", flush=True)
+                test_response = await client.chat.completions.create(
+                    model=candidate,
+                    messages=[{"role": "user", "content": "Hello"}],
+                    temperature=0.01
+                )
+                print(f"[LLM PROXY SUCCESS] Verified working model '{candidate}'", flush=True)
+                working_model = candidate
+                break
+            except Exception as e:
+                print(f"[LLM PROXY candidate '{candidate}' failed]: {e}", flush=True)
+
+        if working_model:
+            model_name = working_model
+            os.environ["MODEL_NAME"] = working_model
+        else:
+            print(f"[LLM PROXY WARNING] All candidates failed. Proceeding with '{model_name}'", flush=True)
 
         # Process the live inbox exactly ONE time (using the 'easy' label)
         analytics_store.is_running = True
