@@ -291,7 +291,8 @@ async def main():
         if "GROQ_API_KEY" in os.environ:
             os.environ["API_BASE_URL"] = "https://api.groq.com/openai/v1"
             os.environ["API_KEY"] = os.environ["GROQ_API_KEY"]
-            os.environ["MODEL_NAME"] = "llama-3.1-8b-instant"
+            if "MODEL_NAME" not in os.environ:
+                os.environ["MODEL_NAME"] = "openai/gpt-oss-120b"
             
         if "API_BASE_URL" not in os.environ:
             os.environ["API_BASE_URL"] = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -307,7 +308,7 @@ async def main():
         fallback_client = None
         fallback_model_name = None
         
-        model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
+        model_name = os.environ.get("MODEL_NAME", "openai/gpt-oss-120b")
         print(f"\n{'='*70}", flush=True)
         print(f"📧 Email Triage AI — Multi-Agent Inference Engine", flush=True)
         print(f"   Model: {model_name}", flush=True)

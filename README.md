@@ -24,7 +24,7 @@ This isn't a simple simulation — it's a **high-performance multi-agent system*
 
 | Feature | Description |
 | :--- | :--- |
-| ⚡ **Llama-3.1-8b-instant** | Powered by Groq's fastest model for sub-second multi-agent reasoning |
+| ⚡ **openai/gpt-oss-120b** | Powered by OpenAI/GPT-OSS 120B model for high-performance multi-agent reasoning |
 | 🛡️ **Auto-Privacy Masking** | Real-time redaction of email addresses and sensitive data in reasoning traces |
 | 🔗 **Gmail API Integration** | Production-ready OAuth2 connection for real inbox management |
 | 🤖 **Multi-Agent Pipeline** | 3 specialized agents: Classifier → Responder → Router |
@@ -42,7 +42,7 @@ graph TD
         S["Simulated Data"] --> F
     end
     
-    subgraph "Multi-Agent Pipeline (Powered by Groq)"
+    subgraph "Multi-Agent Pipeline"
         F --> A1["🔍 Agent 1: Classifier"]
         A1 -->|"classification + reasoning"| A2["💬 Agent 2: Responder"]
         A2 -->|"response + reasoning"| A3["📤 Agent 3: Router"]
@@ -67,17 +67,17 @@ graph TD
 ## 🤖 Multi-Agent System
 
 ### Agent 1: Classifier 🔍
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** `openai/gpt-oss-120b`
 - **Role:** Analyzes email content, sender trust, and spam indicators.
 - **Output:** Category, confidence score, suggested folder.
 
 ### Agent 2: Responder 💬
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** `openai/gpt-oss-120b`
 - **Role:** Generates tone-adaptive replies (empathetic, formal, friendly).
 - **Output:** Adaptive reply text and response reasoning.
 
 ### Agent 3: Router 📤
-- **Model:** Llama-3.1-8b-instant (via Groq)
+- **Model:** `openai/gpt-oss-120b`
 - **Role:** Applies department routing rules (finance, support, management).
 - **Output:** Final folder placement and escalation path.
 
@@ -96,7 +96,7 @@ To ensure safe live demonstrations, the system includes an **Automatic Privacy M
 
 ### 1. Requirements
 - Python 3.10+
-- Groq API Key
+- API Key (Groq / OpenAI)
 - Gmail API credentials (`credentials.json`)
 
 ### 2. Installation
@@ -112,8 +112,8 @@ pip install -r requirements.txt
 ### 3. Environment Config
 Create a `.env` file:
 ```env
-GROQ_API_KEY=your_key_here
-MODEL_NAME=llama-3.1-8b-instant
+API_KEY=your_key_here
+MODEL_NAME=openai/gpt-oss-120b
 ```
 
 ### 4. Running the Dashboard
