@@ -16,6 +16,7 @@ except ImportError as e:
     ) from e
 
 import os
+import sys
 
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
