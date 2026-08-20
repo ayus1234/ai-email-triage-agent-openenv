@@ -20,21 +20,25 @@ import os
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+# Ensure package root is in sys.path for standalone server execution
+_server_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_server_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
 try:
-    from ..models import EmailAction, EmailObservation
-    from .my_env_environment import MyEnvironment
-    from .dashboard import router as dashboard_router
-except (ImportError, ValueError):
+    from my_env.models import EmailAction, EmailObservation
+    from my_env.server.my_env_environment import MyEnvironment
+    from my_env.server.dashboard import router as dashboard_router
+except ImportError:
     try:
-        from models import EmailAction, EmailObservation
-        from server.my_env_environment import MyEnvironment
-        from server.dashboard import router as dashboard_router
-    except ImportError:
-        import sys
-        sys.path.append(os.getcwd())
-        from models import EmailAction, EmailObservation
-        from server.my_env_environment import MyEnvironment
-        from server.dashboard import router as dashboard_router
+        from ..models import EmailAction, EmailObservation  # type: ignore
+        from .my_env_environment import MyEnvironment  # type: ignore
+        from .dashboard import router as dashboard_router  # type: ignore
+    except (ImportError, ValueError):
+        from models import EmailAction, EmailObservation  # type: ignore
+        from server.my_env_environment import MyEnvironment  # type: ignore
+        from server.dashboard import router as dashboard_router  # type: ignore
 
 
 # Create the app with web interface
