@@ -56,13 +56,30 @@ app.include_router(dashboard_router)
 
 from starlette.websockets import WebSocketDisconnect
 
-@app.exception_handler(WebSocketDisconnect)
-async def websocket_disconnect_handler(request, exc: WebSocketDisconnect):
+class SuppressWebSocketDisconnectMiddleware:
     """
-    Gracefully handle client WebSocket disconnects when an agent finishes
-    execution without logging unhandled exception stack traces.
+    Middleware to catch WebSocketDisconnect and ClientDisconnected exceptions
+    when a client completes execution and closes the connection, preventing
+    unhandled ASGI application error tracebacks.
     """
-    return None
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "websocket":
+            try:
+                await self.app(scope, receive, send)
+            except (WebSocketDisconnect, RuntimeError):
+                pass
+            except Exception as e:
+                if "ClientDisconnected" in type(e).__name__ or "WebSocketDisconnect" in type(e).__name__:
+                    pass
+                else:
+                    raise e
+        else:
+            await self.app(scope, receive, send)
+
+app.add_middleware(SuppressWebSocketDisconnectMiddleware)
 
 # Serve static files (CSS, JS, images) from the server/ directory
 _server_dir = os.path.dirname(os.path.abspath(__file__))

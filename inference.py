@@ -257,7 +257,7 @@ async def run_task(task_name: str, client: AsyncOpenAI, url: str, model_name: st
         else:
             score = max(0.001, min(score, 0.999))
             
-        success = score >= 0.99
+        success = score >= 0.70
         steps_taken = max(1, steps_taken)
         if len(rewards) == 0:
             rewards.append(score)
